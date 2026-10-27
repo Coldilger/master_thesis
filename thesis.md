@@ -146,10 +146,18 @@ Closed-loop success, or actions compared at identical states. Offline
 prediction error on training episodes is not used anywhere (no held-out
 split, memorization-confounded).
 
-### 4.4 Statistics
-*To be rewritten after the paired-seed protocol (Chapter 6.2):* successes
-out of trials, paired differences on identical task instances, and
-confidence intervals.
+### 4.4 Statistics (shared rule for all experiments)
+Every condition runs on the same task instances and simulator seeds as
+its baseline. We report successes out of total trials, paired differences
+between conditions, and confidence intervals (Agarwal et al., 2021). Small
+gaps such as 48.6% vs 50.0% are only interpreted if the interval excludes
+zero. *Older runs predate this rule; their baselines will be re-run.*
+
+### 4.5 Reporting by task type (shared rule)
+Results are reported per task and per task type, not only as an average.
+SimplerEnv-Bridge offers only four short pick-and-place tasks (stacking is
+the most contact-heavy), so a full split into reaching, contact-heavy and
+long-horizon tasks is only possible on RoboCasa.
 
 ---
 
@@ -162,7 +170,9 @@ confidence intervals.
 - **mimic-video:** both zeroing and per-step shuffling give 0% on every
   task (baseline 47.9%). **Under re-check:** reading the code shows that
   zero-ablation feeds the decoder a constant it never saw in training, and
-  the shuffle produces a temporally incoherent clip — see Chapter 6.1.
+  the shuffle produces a temporally incoherent clip. A sanity check
+  (shapes, masks, attention, activations, mean-ablation and coherent-shuffle
+  controls) is being run before this result is interpreted.
 - **LDA-1B:** turning the dormant forecast *on* gives 44% vs 48% baseline,
   within noise.
 
@@ -202,46 +212,46 @@ repository; `LDA-1B/eval/robocasa/RESULTS.md`.*
 
 ---
 
-## 6. Follow-up Experiments (advisor's list, in progress)
+## 6. New Experiments (from the advisor's list, in progress)
 
-### 6.1 Sanity checks of the ablations
-Shapes, masks, attention, and activation statistics under each ablation,
-starting with mimic-video's 0%; mean- and resample-ablation as controls.
-*Status: code review done, measurement being prepared.*
+Follow-ups that ask a new question get their own experiment number. The
+ablation sanity check stays part of Experiment 1, and paired statistics
+and per-task reporting are shared rules (Sections 4.4–4.5).
 
-### 6.2 Paired evaluation and confidence intervals
-Same task instances and seeds across conditions; successes out of trials,
-paired differences, confidence intervals.
+### 6.1 Experiment 6 — Graded foresight replacement
+Replace the native forecast with one from the same task and scene, a
+different task in the same scene, or an unrelated scene. Compare actions
+at identical saved states, then run the most informative conditions in
+closed loop. Extends Experiment 1's shuffle into a scale of "how wrong";
+method: interchange interventions (Geiger et al., 2021).
 
-### 6.3 Graded foresight replacement
-Future from the same task and scene, a different task in the same scene,
-or an unrelated scene; actions compared at identical saved states.
+### 6.2 Experiment 7 — Horizon-shifted foresight
+Inject futures predicted for earlier or later horizons than the action
+branch expects: does the *timing* of the predicted event matter?
 
-### 6.4 Horizon-shifted foresight
-Futures for earlier or later horizons than the action branch expects.
+### 6.3 Experiment 8 — Instruction–foresight conflict
+Keep the observation, change the instruction, compare futures and actions;
+then swap the futures between instructions. Does the action follow the
+goal, the foresight, or both? (Cue-conflict design, Geirhos et al., 2019.)
 
-### 6.5 Instruction–foresight conflict
-Same observation, different instruction; then swap the resulting futures
-to see whether the action follows the goal, the foresight, or both.
-
-### 6.6 Compute–performance trade-off
+### 6.4 Experiment 9 — Compute–performance trade-off
 Vary generation steps, prediction detail and replanning frequency; plot
-success against full inference latency.
+task success against full inference latency. Builds on Experiment 3 and on
+mimic-video's own denoising-depth analysis.
 
-### 6.7 Perturbed starts and object displacement
-Whether foresight helps most when the robot must adapt.
+### 6.5 Experiment 10 — Perturbed starts and object displacement
+Evaluate from perturbed starting states or after moving an object mid-
+episode: is foresight most useful when the robot has to adapt?
 
-### 6.8 Matched action-only baseline (if compute permits)
-Same data and budget without a generation branch (for F1-VLA: π0).
+### 6.6 Experiment 11 — Matched action-only baseline (if compute permits)
+Same data and training budget without a generation branch (for F1-VLA:
+π0), compared with the jointly trained model with and without its
+generation branch at inference.
 
-### 6.9 BridgeData pipeline audit
+### 6.7 Experiment 12 — BridgeData pipeline audit
 Episode overlap, language annotations, frame sampling, action coordinates
-and orientation corrections across the two Bridge processing pipelines.
-
-### 6.10 Per-category reporting
-Separate results by task type. Note: SimplerEnv-Bridge has only four short
-pick-and-place tasks, so a full category split is only possible on
-RoboCasa.
+and orientation corrections across the two Bridge processing pipelines
+(`bridge_orig_lerobot` and LDA-1B's converted copy).
 
 ---
 
