@@ -25,7 +25,7 @@ costs (latency), probe what the internal representation encodes
 
 *Headline finding (to be finalized):* the three models disagree. F1-VLA
 is blind to the content of its forecast (a wrong episode's forecast changes
-success by +1.4 pp, 95% CI ±4.5), although removing the forecast tokens
+success by +1.4 pp, 95% CI −3.1 to +5.9), although removing the forecast tokens
 costs 14 pp. mimic-video follows the content of its forecast: every
 replacement, including on-distribution ones that keep its decoder working
 normally, drops success from 48% to 0%. LDA-1B does not use its forecast at
