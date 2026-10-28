@@ -167,12 +167,18 @@ long-horizon tasks is only possible on RoboCasa.
 - **F1-VLA:** zeroing the foresight lowers success from 48.6% to 34.7%
   (−13.9 pp); a real image from a wrong episode recovers 50.0%. The model
   needs *some* real visual signal, not the right one.
-- **mimic-video:** both zeroing and per-step shuffling give 0% on every
-  task (baseline 47.9%). **Under re-check:** reading the code shows that
-  zero-ablation feeds the decoder a constant it never saw in training, and
-  the shuffle produces a temporally incoherent clip. A sanity check
-  (shapes, masks, attention, activations, mean-ablation and coherent-shuffle
-  controls) is being run before this result is interpreted.
+- **mimic-video:** every intervention on the forecast gives 0% (baseline
+  46/96 = 47.9%, rerun on identical episodes). A sanity check requested by
+  the advisor shows that plain zeroing is not clean evidence: it makes all
+  context tokens identical, cross-attention uniform, and the decoder's
+  rotations invalid — the computation breaks. But controls that keep the
+  decoder on its normal activation range collapse just as completely:
+  the task-average forecast (0/72 so far; the robot barely moves), a
+  coherent clip from another episode, and the original per-step shuffle
+  (both 0/96, paired difference −47.9 pp, 95% CI [−56.2, −39.6]). Under
+  the shuffles the robot moves normally but never touches the correct
+  object. Conclusion: the decoder follows the *content* of the current
+  forecast.
 - **LDA-1B:** turning the dormant forecast *on* gives 44% vs 48% baseline,
   within noise.
 
