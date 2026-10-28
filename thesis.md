@@ -24,10 +24,12 @@ costs (latency), probe what the internal representation encodes
 (probing), and erase confounding information from it (concept erasure).
 
 *Headline finding (to be finalized):* the three models disagree. F1-VLA
-needs *some* real visual signal in its forecast slot but barely cares about
-its content; mimic-video collapses whenever the forecast is wrong or
-missing (under re-check, see Chapter 5); LDA-1B does not use its forecast
-at inference at all, and turning it on does not help.
+is blind to the content of its forecast (a wrong episode's forecast changes
+success by +1.4 pp, 95% CI ±4.5), although removing the forecast tokens
+costs 14 pp. mimic-video follows the content of its forecast: every
+replacement, including on-distribution ones that keep its decoder working
+normally, drops success from 48% to 0%. LDA-1B does not use its forecast at
+inference at all, and turning it on does not help.
 
 ---
 
@@ -164,9 +166,14 @@ long-horizon tasks is only possible on RoboCasa.
 ## 5. Results
 
 ### 5.1 Experiment 1 — Ablation
-- **F1-VLA:** zeroing the foresight lowers success from 48.6% to 34.7%
-  (−13.9 pp); a real image from a wrong episode recovers 50.0%. The model
-  needs *some* real visual signal, not the right one.
+- **F1-VLA:** removing the foresight tokens lowers success from 140/288
+  (48.6%) to 100/288 (34.7%): −13.9 pp, paired 95% CI [−20.1, −7.3]. A
+  foresight from a wrong episode gives 144/288 (50.0%): +1.4 pp [−3.1,
+  +5.9], indistinguishable from baseline, and only 44 of 288 paired
+  episodes change outcome. The model is blind to the forecast's content
+  within about ±6 pp. Whether the removal cost means "needs some real
+  foresight" or "breaks on an unseen sequence shape" is still open (an
+  on-distribution mean-foresight control is the next check).
 - **mimic-video:** every intervention on the forecast gives 0% (baseline
   46/96 = 47.9%, rerun on identical episodes). A sanity check requested by
   the advisor shows that plain zeroing is not clean evidence: it makes all
