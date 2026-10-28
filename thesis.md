@@ -173,12 +173,14 @@ long-horizon tasks is only possible on RoboCasa.
   context tokens identical, cross-attention uniform, and the decoder's
   rotations invalid — the computation breaks. But controls that keep the
   decoder on its normal activation range collapse just as completely:
-  the task-average forecast (0/72 so far; the robot barely moves), a
+  the task-average forecast (0/96; the robot barely moves), a
   coherent clip from another episode, and the original per-step shuffle
   (both 0/96, paired difference −47.9 pp, 95% CI [−56.2, −39.6]). Under
   the shuffles the robot moves normally but never touches the correct
-  object. Conclusion: the decoder follows the *content* of the current
-  forecast.
+  object. Reusing the episode's own first forecast for the whole episode
+  also fails (0/96), though it is the only intervention that still
+  reaches the correct object sometimes (12/96). Conclusion: the decoder
+  follows the *content* of a correct and current forecast.
 - **LDA-1B:** turning the dormant forecast *on* gives 44% vs 48% baseline,
   within noise.
 
