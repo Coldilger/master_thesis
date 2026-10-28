@@ -24,9 +24,10 @@ costs (latency), probe what the internal representation encodes
 (probing), and erase confounding information from it (concept erasure).
 
 *Headline finding (to be finalized):* the three models disagree. F1-VLA
-is blind to the content of its forecast (a wrong episode's forecast changes
-success by +1.4 pp, 95% CI −3.1 to +5.9), although removing the forecast tokens
-costs 14 pp. mimic-video follows the content of its forecast: every
+is blind to the content of its forecast: a wrong episode's forecast or the
+task-average forecast leave success unchanged (+1.4 pp and −0.3 pp, 95% CIs
+within about ±6 pp); removing the forecast tokens costs 14 pp, but only
+because it changes the input's shape. mimic-video follows the content of its forecast: every
 replacement, including on-distribution ones that keep its decoder working
 normally, drops success from 48% to 0%. LDA-1B does not use its forecast at
 inference at all, and turning it on does not help.
@@ -170,10 +171,12 @@ long-horizon tasks is only possible on RoboCasa.
   (48.6%) to 100/288 (34.7%): −13.9 pp, paired 95% CI [−20.1, −7.3]. A
   foresight from a wrong episode gives 144/288 (50.0%): +1.4 pp [−3.1,
   +5.9], indistinguishable from baseline, and only 44 of 288 paired
-  episodes change outcome. The model is blind to the forecast's content
-  within about ±6 pp. Whether the removal cost means "needs some real
-  foresight" or "breaks on an unseen sequence shape" is still open (an
-  on-distribution mean-foresight control is the next check).
+  episodes change outcome. Replacing the foresight with its task average
+  — same length, positions and masks, no episode content — gives 139/288
+  (−0.3 pp [−4.5, +3.8]), so the removal cost comes from the unseen,
+  shorter sequence, not from lost information. The model does not use the
+  content of its foresight at inference: it needs the slot filled, not
+  informative.
 - **mimic-video:** every intervention on the forecast gives 0% (baseline
   46/96 = 47.9%, rerun on identical episodes). A sanity check requested by
   the advisor shows that plain zeroing is not clean evidence: it makes all
@@ -273,8 +276,12 @@ and orientation corrections across the two Bridge processing pipelines
 ## 7. Discussion
 
 ### 7.1 Three models, three kinds of dependence
-Structural (F1-VLA), content-sensitive (mimic-video, pending re-check),
-and none at inference (LDA-1B).
+Content-blind but shape-dependent (F1-VLA), content-following
+(mimic-video), and unused at inference (LDA-1B). A methodological lesson
+from both forecast-using models: removing or zeroing the forecast breaks
+the decoder's input distribution and overstates (F1) or confounds
+(mimic-video) the effect; on-distribution replacements are the reliable
+test.
 
 ### 7.2 What this means for "world models help robots"
 The benefit can come from training, from inference, or both — and which
