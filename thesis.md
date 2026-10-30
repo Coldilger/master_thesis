@@ -151,7 +151,8 @@ split, memorization-confounded).
 
 ### 4.4 Statistics (shared rule for all experiments)
 Every condition runs on the same task instances and simulator seeds as
-its baseline. We report successes out of total trials, paired differences
+its baseline. For RoboCasa this required seeding the scene of every
+episode ourselves: the published evaluation client leaves it random. We report successes out of total trials, paired differences
 between conditions, and confidence intervals (Agarwal et al., 2021). Small
 gaps such as 48.6% vs 50.0% are only interpreted if the interval excludes
 zero. *Older runs predate this rule; their baselines will be re-run.*
@@ -199,8 +200,11 @@ long-horizon tasks is only possible on RoboCasa.
   also fails (0/96), though it is the only intervention that still
   reaches the correct object sometimes (12/96). Conclusion: the decoder
   follows the *content* of a correct and current forecast.
-- **LDA-1B:** turning the dormant forecast *on* gives 44% vs 48% baseline,
-  within noise.
+- **LDA-1B:** turning the dormant forecast *on* gives 62/150 vs 67/150
+  for the baseline on identical scenes (−3.3 pp, 95% CI [−12.7, +6.0],
+  p = 0.58): no measurable effect. The original 44% vs 48% compared
+  different random scenes, because the authors' RoboCasa client never
+  seeded its environment; the rerun fixes the scenes per episode.
 
 ### 5.2 Experiment 2 — Oracle injection
 - **F1-VLA:** the oracle's action is close to the real policy's own
