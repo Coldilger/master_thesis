@@ -27,10 +27,14 @@ costs (latency), probe what the internal representation encodes
 is blind to the content of its forecast: a wrong episode's forecast or the
 task-average forecast leave success unchanged (+1.4 pp and −0.3 pp, 95% CIs
 within about ±6 pp); removing the forecast tokens costs 14 pp, but only
-because it changes the input's shape. mimic-video follows the content of its forecast: every
-replacement, including on-distribution ones that keep its decoder working
-normally, drops success from 48% to 0%. LDA-1B does not use its forecast at
-inference at all, and turning it on does not help.
+because it changes the input's shape. mimic-video's decoder depends entirely on
+its video model's context: every replacement, including on-distribution
+ones that keep the decoder working normally, drops success from 48% to 0%.
+But at its deployed operating point the forecast and the view of the
+current scene live in the same tokens and cannot be removed separately, so
+this does not show use of *predicted future* content. LDA-1B does not use
+its forecast at inference at all (its action head barely reacts even to
+the real next frame), and turning it on does not help.
 
 ---
 
