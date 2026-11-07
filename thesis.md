@@ -198,13 +198,35 @@ long-horizon tasks is only possible on RoboCasa.
   the shuffles the robot moves normally but never touches the correct
   object. Reusing the episode's own first forecast for the whole episode
   also fails (0/96), though it is the only intervention that still
-  reaches the correct object sometimes (12/96). Conclusion: the decoder
-  follows the *content* of a correct and current forecast.
+  reaches the correct object sometimes (12/96). But the context these
+  interventions replace is the decoder's only view of the scene and the
+  task, so they remove perception together with the forecast. A follow-up
+  test (16 real Bridge clips, open loop) shows the two cannot be separated
+  at the deployed operating point (`stop=1`, sigma 68 of 80): the decoder
+  reads almost everything from the 14 future frames' tokens (dropping the
+  observed frames' tokens changes the action by 5%), and those tokens start
+  from input-independent noise, so what they carry is the video model's
+  processed view of the observed frames and the prompt. Every way of
+  removing the future — dropping it after the video model, running the
+  video model on the observed frames only, or swapping in the average
+  future — gives a near-static policy (translation 0.004–0.027 vs 0.069).
+  Conclusion: mimic-video's decoder depends on the video model's context,
+  but Experiment 1 cannot show that it uses *predicted future* content;
+  that question moves to Experiment 9 (how far the forecast is generated).
 - **LDA-1B:** turning the dormant forecast *on* gives 62/150 vs 67/150
   for the baseline on identical scenes (−3.3 pp, 95% CI [−12.7, +6.0],
   p = 0.58): no measurable effect. The original 44% vs 48% compared
   different random scenes, because the authors' RoboCasa client never
   seeded its environment; the rerun fixes the scenes per episode.
+  Internal diagnostics (180 decisions on identical states) show the
+  world-model-on path runs correctly — expected shapes, no attention
+  masks, the forecast in the same range as a real next frame (cosine
+  0.88) and contributing ~29% of the merged observation tokens — but the
+  action head barely reacts to it: replacing the forecast with the real
+  next frame, zeros, noise or another episode's forecast changes the
+  16-step action chunk by 0.06–0.29% (relative L2), against 133% between
+  consecutive decisions. Whether the head reacts to the *current* frame
+  (a positive control) is not yet tested.
 
 ### 5.2 Experiment 2 — Oracle injection
 - **F1-VLA:** the oracle's action is close to the real policy's own
@@ -288,12 +310,14 @@ and orientation corrections across the two Bridge processing pipelines
 ## 7. Discussion
 
 ### 7.1 Three models, three kinds of dependence
-Content-blind but shape-dependent (F1-VLA), content-following
-(mimic-video), and unused at inference (LDA-1B). A methodological lesson
-from both forecast-using models: removing or zeroing the forecast breaks
-the decoder's input distribution and overstates (F1) or confounds
-(mimic-video) the effect; on-distribution replacements are the reliable
-test.
+Content-blind but shape-dependent (F1-VLA), context-dependent with
+forecast and perception inseparable (mimic-video), and unused at inference
+(LDA-1B). A methodological lesson from both forecast-using models: removing
+or zeroing the forecast breaks the decoder's input distribution and
+overstates (F1) or confounds (mimic-video) the effect; on-distribution
+replacements are the reliable test, and only where the forecast is
+carried separately from perception (F1's foresight tokens, LDA's
+next-observation slot).
 
 ### 7.2 What this means for "world models help robots"
 The benefit can come from training, from inference, or both — and which
