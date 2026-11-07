@@ -33,8 +33,10 @@ ones that keep the decoder working normally, drops success from 48% to 0%.
 But at its deployed operating point the forecast and the view of the
 current scene live in the same tokens and cannot be removed separately, so
 this does not show use of *predicted future* content. LDA-1B does not use
-its forecast at inference at all (its action head barely reacts even to
-the real next frame), and turning it on does not help.
+its forecast at inference at all: its action head barely reacts even to
+the real next frame, or to its current frame given through the same input
+(it sees the scene through its VLM instead), and turning the forecast on
+does not help.
 
 ---
 
@@ -229,8 +231,14 @@ long-horizon tasks is only possible on RoboCasa.
   action head barely reacts to it: replacing the forecast with the real
   next frame, zeros, noise or another episode's forecast changes the
   16-step action chunk by 0.06–0.29% (relative L2), against 133% between
-  consecutive decisions. Whether the head reacts to the *current* frame
-  (a positive control) is not yet tested.
+  consecutive decisions. A positive control shows the measurement can
+  detect an effect — swapping the whole image input changes the action by
+  up to 46% (90th percentile 20–36%), mostly early in the episode — but
+  replacing the *current* frame's tokens at the same input the forecast
+  uses barely matters either (zeros: 0.24%, another episode's frame:
+  0.02%). The action head ignores the visual tokens it receives directly,
+  forecast and current frame alike; vision reaches the action through the
+  VLM features.
 
 ### 5.2 Experiment 2 — Oracle injection
 - **F1-VLA:** the oracle's action is close to the real policy's own
