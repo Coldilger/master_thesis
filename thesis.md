@@ -303,6 +303,22 @@ Vary generation steps, prediction detail and replanning frequency; plot
 task success against full inference latency. Builds on Experiment 3 and on
 mimic-video's own denoising-depth analysis.
 
+*mimic-video, open loop (16 real Bridge clips).* The decoder reads the
+video model's activations after step k of 35 (deployed: k=1). Changing only
+the video model's random seed keeps perception identical and changes only
+the imagined future. Swapping in another seed's future tokens moves the
+action ~80% of the way to that seed's action (observed tokens: ~20%) at
+every depth, in 16/16 clips: the decoder follows the imagined future. With
+depth the imagined futures become specific (they differ across seeds by 9%
+at k=0, ~60% from k=16) and the action follows suit (4% at k=1, 32% at
+k=16–23), while the forecast does not get closer to the real future and
+latency grows from 1.4 s (k=1) to 13 s (k=23). Given the real future
+instead, the decoder acts about as differently as between two seeds. An
+earlier unpaired run found success falling from 47.9% at k=1 to 11.5% at
+k=23; the open-loop result suggests why — deeper forecasts commit to one
+specific, often wrong future and the decoder follows it. The paired
+closed-loop sweep is next.
+
 ### 6.5 Experiment 10 — Perturbed starts and object displacement
 Evaluate from perturbed starting states or after moving an object mid-
 episode: is foresight most useful when the robot has to adapt?
