@@ -316,7 +316,8 @@ latency grows from 1.4 s (k=1) to 13 s (k=23). Given the real future
 instead, the decoder acts about as differently as between two seeds. An
 earlier unpaired run found success falling from 47.9% at k=1 to 11.5% at
 k=23; the open-loop result suggests why — deeper forecasts commit to one
-specific, often wrong future and the decoder follows it. The paired
+specific future, no closer to the truth, and the decoder follows it (a
+hypothesis until the closed loop tests it). The paired
 closed-loop sweep is next.
 
 ### 6.5 Experiment 10 — Perturbed starts and object displacement
