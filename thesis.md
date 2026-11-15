@@ -85,6 +85,18 @@ actions, usually built on a pretrained vision-language model. Key
 reference point: π0 (Black et al., 2024), on which F1-VLA builds.
 
 ### 2.2 World models and foresight inside policies
+The three models are chosen to cover the three classes of the taxonomy in
+"World Action Models: A Survey" (Shen et al., 2026, arXiv:2606.20781),
+which sorts methods by what they must generate at inference:
+*Render-and-Decode* (the video backbone runs to pixel output before the
+action — F1-VLA), *Latent-Only* (the inference path stops before pixel
+decoding — mimic-video) and *Video-Generation-Free* (no video-generation
+backbone on the predictive path; forecasting is learned in a feature latent
+— LDA-1B). The survey argues the field is moving toward generating less of
+the future while keeping what control needs; our Experiment 9 tests this
+directly for mimic-video. *TODO: check each model's placement against the
+survey's Tables 1–2.*
+
 Models that predict future observations and condition actions on them:
 F1-VLA (arXiv:2509.06951), mimic-video (arXiv:2512.15692), LDA-1B
 (arXiv:2602.12215). mimic-video's own paper already runs a version of our
