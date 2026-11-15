@@ -331,7 +331,10 @@ exactly where the open loop showed futures becoming seed-specific and the
 action following them. Two causes remain unseparated: committing to one
 wrong future, or a train/test mismatch (at low noise the decoder was
 trained only on the real future). Averaging actions over video seeds at
-k=16 would separate them.
+k=16 would separate them. Forecast detail is not varied for mimic-video:
+resolution and clip length are fixed, the decoder was trained on a context
+of exactly that size, and changing it would alter the input layout rather
+than only the forecast's content (the confound of Section 7.1).
 
 ### 6.5 Experiment 10 — Perturbed starts and object displacement
 Evaluate from perturbed starting states or after moving an object mid-
