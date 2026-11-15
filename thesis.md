@@ -98,9 +98,15 @@ directly for mimic-video. *TODO: check each model's placement against the
 survey's Tables 1–2.*
 
 Models that predict future observations and condition actions on them:
-F1-VLA (arXiv:2509.06951), mimic-video (arXiv:2512.15692), LDA-1B
-(arXiv:2602.12215). mimic-video's own paper already runs a version of our
-oracle experiment (Section III, Fig. 2) — our Experiment 2 extends it.
+F1-VLA (Lv et al., 2025, arXiv:2509.06951), mimic-video (Pai et al., 2025,
+arXiv:2512.15692), LDA-1B (Lyu et al., 2026, arXiv:2602.12215). The papers
+already contain versions of three of our experiments: mimic-video's oracle
+case study (Sec. III; ground-truth future latents give near-perfect
+success) and its sweep of the video flow time (Fig. 6; success peaks at the
+noisiest setting), and F1-VLA's ablation table (2, 4 or 6 forecast scales
+at inference; a No-Gen variant trained without the generation expert). They
+are single runs on 24 episodes per task; our contribution is the paired
+protocol and the tests that separate explanations (Sections 5–6).
 
 ### 2.3 Causal interventions on neural networks
 Ablation and activation patching (Heimersheim & Nanda, 2024), interchange
@@ -128,20 +134,39 @@ One short section per model: what the forecast is, where it enters the
 action decoder, and what "removing it" means mechanically.
 
 ### 3.1 F1-VLA
-Generates a foresight image with a next-scale (VAR) generator at every
-control step; the action expert reads it through a shared KV cache.
-Finetuned by us on Bridge (chunk size 4, 100k steps).
+Three experts in one decoder-only transformer: understanding (image and
+language), generation (next-scale VAR forecast of a future frame) and
+action (flow matching), with attention flowing understanding → generation →
+action only. The paper describes the forecast as decoded into a future
+image that conditions the action. In the released code the image decoder
+is not called: the action expert reads the keys and values of the forecast
+positions in the shared cache. As the paper states, inference generates 4
+of the 10 scales; of these, the tokens of scales 1–3 (14 tokens, finest
+grid 3×3) reach the action expert and the scale-4 tokens are sampled but
+not fed back. The generation block the action expert reads is 680 tokens of
+history frames followed by 29 forecast positions. Finetuned by us on Bridge
+(chunk size 4, 100k steps; 48.6% against the paper's 59.4%).
 
 ### 3.2 mimic-video
 A video-diffusion backbone (Cosmos-Predict2) is partially denoised; hidden
 activations from one layer (`crossattn_emb`) condition a flow-matching
-action decoder through cross-attention. Operating point: one denoising
-step (`stop=1`).
+action decoder through cross-attention. The paper calls the decoder an
+inverse dynamics model. It is trained on activations computed from the
+*ground-truth* future video noised to a random flow time, and is told that
+flow time. Operating point: one denoising step (`stop=1`). Our baseline
+reproduces the paper's SIMPLER-Bridge result (47.9% vs. 46.9%).
 
 ### 3.3 LDA-1B
-A shared MM-DiT trained with a visual-forecasting co-objective, but the
-default inference path does not run the forecast. Bridge finetunes reached
-0%; experiments run on the authors' RoboCasa checkpoint (48% baseline).
+One MM-DiT co-trained on four tasks — policy, forward dynamics, inverse
+dynamics and visual forecasting in DINO latent space — selected by a task
+embedding. The authors' inference uses the policy task only, with a
+register token in the future-state slot. Our "forecast on" condition is our
+own composition of two trained tasks: the visual-forecasting output is fed
+to the inverse-dynamics task, which in training only ever saw the real
+future frame. Pretraining data is mostly egocentric (the paper names this
+as a limitation) but includes Open X-Embodiment. Our Bridge finetunes
+reached 0%, cause not established (Section 5.6); experiments run on the
+authors' RoboCasa checkpoint (48% baseline).
 
 ---
 
@@ -186,6 +211,10 @@ long-horizon tasks is only possible on RoboCasa.
 ## 5. Results
 
 ### 5.1 Experiment 1 — Ablation
+- *Under correction (2026-11-15): the internal diagnostics below split the
+  generation block wrongly (it is 680 history tokens followed by 29 forecast
+  positions, not 30 + 679). The attention share and the 1–3% / 38% change
+  figures will be recomputed; the closed-loop numbers are unaffected.*
 - **F1-VLA:** removing the foresight tokens lowers success from 140/288
   (48.6%) to 100/288 (34.7%): −13.9 pp, paired 95% CI [−20.1, −7.3]. A
   foresight from a wrong episode gives 144/288 (50.0%): +1.4 pp [−3.1,
@@ -300,8 +329,12 @@ future pose keeps a smaller nonlinear residual.
 
 ### 5.6 LDA-1B and camera viewpoint
 Swapping RoboCasa's egocentric camera for a third-person one drops success
-from 48% to 0/50, with a self-occlusion caveat. Together with the Bridge 0%,
-this supports "LDA-1B does not transfer across viewpoint".
+from 48% to 0/50, with a self-occlusion caveat. This shows that a
+checkpoint finetuned on egocentric frames does not work zero-shot from
+another viewpoint; it does not explain the Bridge 0%, where the model was
+finetuned on third-person frames and had seen such data in pretraining.
+The cause of the Bridge result is not established (viewpoint and
+pretraining, or a data-pipeline difference — Experiment 12).
 
 ![LDA-1B on RoboCasa with its training (egocentric) camera and with a third-person camera.](figures/fig_lda_camera_viewpoint.png)
 

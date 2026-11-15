@@ -3,7 +3,8 @@
 ## Facts
 
 - F1-VLA and mimic-video were published with Bridge results; LDA-1B was
-  not. Bridge does not appear in the LDA-1B paper (arXiv:2602.12215).
+  not evaluated on Bridge (arXiv:2602.12215), although Open X-Embodiment is
+  part of its pretraining data.
 - Our Bridge finetunes of LDA-1B gave 0% on SimplerEnv Bridge (summer 2026;
   diagnostic trail in `LDA-1B/eval/bridge/RESULTS.md`).
 - The authors' RoboCasa checkpoint works in our setup (48% on
@@ -33,8 +34,12 @@ Two explanations remain for Bridge 0%:
 
 ## Cheap checks, in order
 
-1. List the pretraining datasets (`data_mix`) and their camera types. No
-   GPU. Open since August.
+1. ~~List the pretraining datasets and their camera types.~~ Done from the
+   paper (2026-11-15): EI-30k includes Open X-Embodiment (3000 h, contains
+   BridgeData V2) and other third-person robot data, about a tenth of the
+   total; the paper's own limitations name "predominantly egocentric camera
+   viewpoints". So third-person frames were seen in pretraining, which makes
+   explanation 2 the first to check.
 2. Experiment 12: audit the two Bridge pipelines (`bridge_orig_lerobot` vs.
    `convert_bridge_to_lda.py`).
 3. RoboCasa camera sweep: two or three third-person cameras that do not
