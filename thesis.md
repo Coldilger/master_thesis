@@ -252,6 +252,10 @@ long-horizon tasks is only possible on RoboCasa.
   forecast and current frame alike; vision reaches the action through the
   VLM features.
 
+![Experiment 1. Closed-loop success after replacing or removing the forecast, with Wilson 95% intervals. Grey: the deployed policy on the same episodes.](figures/fig_exp1_ablation.png)
+
+*Figure: Experiment 1. Closed-loop success after replacing or removing the forecast, with Wilson 95% intervals. Grey: the deployed policy on the same episodes.*
+
 ### 5.2 Experiment 2 — Oracle injection
 - **F1-VLA:** the oracle's action is close to the real policy's own
   action — consistent with content mattering little.
@@ -262,15 +266,27 @@ long-horizon tasks is only possible on RoboCasa.
   baseline (0.90 vs 0.75 L1), and far from each other: the content of the
   fed-in future changes this pathway's output.
 
+![Experiment 2. Change of the action when the model is given the real future, next to a reference size for each model (live probes; actions are compared at identical states, never to dataset actions).](figures/fig_exp2_oracle.png)
+
+*Figure: Experiment 2. Change of the action when the model is given the real future, next to a reference size for each model (live probes; actions are compared at identical states, never to dataset actions).*
+
 ### 5.3 Experiment 3 — Cost per decision
 F1-VLA 215.7 ms median per control step; mimic-video 1060 ms per decision
 at `stop=1` (~4–5× F1/LDA); LDA-1B 254.7 ms, rising to 428.2 ms (+68%)
 with the forecast turned on.
 
+![Experiment 3. Median latency of one decision.](figures/fig_exp3_cost.png)
+
+*Figure: Experiment 3. Median latency of one decision.*
+
 ### 5.4 Experiment 4 — Representation probing
 F1-VLA and mimic-video: current pose is not recoverable (worse than a
 constant predictor), with linear and MLP probes alike. LDA-1B: an MLP
 recovers both current and future pose where ridge regression fails.
+
+![Experiment 4. Gain of a pose probe over a constant predictor on held-out episodes; below zero means the pose cannot be read.](figures/fig_exp4_probing.png)
+
+*Figure: Experiment 4. Gain of a pose probe over a constant predictor on held-out episodes; below zero means the pose cannot be read.*
 
 ### 5.5 Experiment 5 — Concept erasure
 F1-VLA and mimic-video: erasing episode identity does not make pose
@@ -278,10 +294,18 @@ recoverable — the "masking" explanation is refuted. LDA-1B: most of the
 MLP's current-pose signal turns out to be a linear direction ridge missed;
 future pose keeps a smaller nonlinear residual.
 
+![Experiment 5. Left: episode-identity accuracy before and after LEACE erasure. Right: the pose probe before and after erasure.](figures/fig_exp5_erasure.png)
+
+*Figure: Experiment 5. Left: episode-identity accuracy before and after LEACE erasure. Right: the pose probe before and after erasure.*
+
 ### 5.6 LDA-1B and camera viewpoint
 Swapping RoboCasa's egocentric camera for a third-person one drops success
 from 48% to 0/50, with a self-occlusion caveat. Together with the Bridge 0%,
 this supports "LDA-1B does not transfer across viewpoint".
+
+![LDA-1B on RoboCasa with its training (egocentric) camera and with a third-person camera.](figures/fig_lda_camera_viewpoint.png)
+
+*Figure: LDA-1B on RoboCasa with its training (egocentric) camera and with a third-person camera.*
 
 *Sources: `eval/bridge/EXPERIMENTS.md` and `experiment*/README.md` in each
 repository; `LDA-1B/eval/robocasa/RESULTS.md`.*
@@ -330,6 +354,10 @@ earlier unpaired run found success falling from 47.9% at k=1 to 11.5% at
 k=23; the open-loop result suggests why — deeper forecasts commit to one
 specific future, no closer to the truth, and the decoder follows it.
 
+![Experiment 9, open loop. Left: how far the action follows another video seed when its future tokens (or, as a control, its observed tokens) are swapped in. Middle: difference between video seeds. Right: forecast error relative to a static scene.](figures/fig_exp9_open_loop.png)
+
+*Figure: Experiment 9, open loop. Left: how far the action follows another video seed when its future tokens (or, as a control, its observed tokens) are swapped in. Middle: difference between video seeds. Right: forecast error relative to a static scene.*
+
 *mimic-video, closed loop (96 SimplerEnv Bridge episodes, paired with the
 deployed k=1).* Success is flat for k=0–4 (44.8%, 47.9%, 49.0%, 42.7%;
 every paired CI contains 0) and then falls: k=8 31.2% (−16.7 pp
@@ -355,6 +383,10 @@ checked for a controller artifact. Forecast detail is not varied for mimic-video
 resolution and clip length are fixed, the decoder was trained on a context
 of exactly that size, and changing it would alter the input layout rather
 than only the forecast's content (the confound of Section 7.1).
+
+![Experiment 9, closed loop. Left: success against latency per decision for denoising depths k=0–16, and for k=16 with the action averaged over four video seeds. Right: success against the number of planned actions executed per decision.](figures/fig_exp9_closed_loop.png)
+
+*Figure: Experiment 9, closed loop. Left: success against latency per decision for denoising depths k=0–16, and for k=16 with the action averaged over four video seeds. Right: success against the number of planned actions executed per decision.*
 
 ### 6.5 Experiment 10 — Perturbed starts and object displacement
 Evaluate from perturbed starting states or after moving an object mid-
@@ -383,6 +415,10 @@ overstates (F1) or confounds (mimic-video) the effect; on-distribution
 replacements are the reliable test, and only where the forecast is
 carried separately from perception (F1's foresight tokens, LDA's
 next-observation slot).
+
+![Deployed success of each model next to its cleanest forecast-changing condition.](figures/fig_overview.png)
+
+*Figure: Deployed success of each model next to its cleanest forecast-changing condition.*
 
 ### 7.2 What this means for "world models help robots"
 The benefit can come from training, from inference, or both — and which
