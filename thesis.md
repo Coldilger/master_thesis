@@ -316,9 +316,22 @@ latency grows from 1.4 s (k=1) to 13 s (k=23). Given the real future
 instead, the decoder acts about as differently as between two seeds. An
 earlier unpaired run found success falling from 47.9% at k=1 to 11.5% at
 k=23; the open-loop result suggests why — deeper forecasts commit to one
-specific future, no closer to the truth, and the decoder follows it (a
-hypothesis until the closed loop tests it). The paired
-closed-loop sweep is next.
+specific future, no closer to the truth, and the decoder follows it.
+
+*mimic-video, closed loop (96 SimplerEnv Bridge episodes, paired with the
+deployed k=1).* Success is flat for k=0–4 (44.8%, 47.9%, 49.0%, 42.7%;
+every paired CI contains 0) and then falls: k=8 31.2% (−16.7 pp
+[−26.0, −7.3], McNemar p=0.014), k=16 9.4% (−38.5 pp [−47.9, −29.2],
+p<0.0001), while latency per decision grows from 1.4 s to 9.3 s. SimplerEnv
+waits for the model, so the drop comes from what the decoder receives, not
+from delay. Failures start early — at k=16 the correct object is grasped in
+28/96 episodes vs. 61/96 at k=1. The deployed k=1 is therefore also the
+best measured point: extra generation buys no success. The collapse sits
+exactly where the open loop showed futures becoming seed-specific and the
+action following them. Two causes remain unseparated: committing to one
+wrong future, or a train/test mismatch (at low noise the decoder was
+trained only on the real future). Averaging actions over video seeds at
+k=16 would separate them.
 
 ### 6.5 Experiment 10 — Perturbed starts and object displacement
 Evaluate from perturbed starting states or after moving an object mid-
