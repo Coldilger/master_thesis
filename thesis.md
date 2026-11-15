@@ -342,8 +342,16 @@ best measured point: extra generation buys no success. The collapse sits
 exactly where the open loop showed futures becoming seed-specific and the
 action following them. Two causes remain unseparated: committing to one
 wrong future, or a train/test mismatch (at low noise the decoder was
-trained only on the real future). Averaging actions over video seeds at
-k=16 would separate them. Forecast detail is not varied for mimic-video:
+trained only on the real future). Averaging the action over four video
+seeds at k=16 separates them: success returns to 47/96 = 49.0% (+39.6 pp
+[+29.2, +50.0] against the single seed, p < 0.0001; +1.0 pp [−10.4, +12.5]
+against k=1). The mismatch is present in each of the four calls, so the
+single-seed collapse is the decoder committing to one imagined future. This
+does not make deep forecasts useful: four of them (about 4 × 9.3 s) only
+match what k=1 gives in 1.4 s. Replanning rate at k=1: executing 10 of the
+15 planned actions instead of 5 gives 38/96 (−8.3 pp [−17.7, +1.0],
+p = 0.15); executing 1 or 2 gives 0/96, which is unexplained and not yet
+checked for a controller artifact. Forecast detail is not varied for mimic-video:
 resolution and clip length are fixed, the decoder was trained on a context
 of exactly that size, and changing it would alter the input layout rather
 than only the forecast's content (the confound of Section 7.1).
