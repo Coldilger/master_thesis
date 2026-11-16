@@ -211,10 +211,6 @@ long-horizon tasks is only possible on RoboCasa.
 ## 5. Results
 
 ### 5.1 Experiment 1 — Ablation
-- *Under correction (2026-11-15): the internal diagnostics below split the
-  generation block wrongly (it is 680 history tokens followed by 29 forecast
-  positions, not 30 + 679). The attention share and the 1–3% / 38% change
-  figures will be recomputed; the closed-loop numbers are unaffected.*
 - **F1-VLA:** removing the foresight tokens lowers success from 140/288
   (48.6%) to 100/288 (34.7%): −13.9 pp, paired 95% CI [−20.1, −7.3]. A
   foresight from a wrong episode gives 144/288 (50.0%): +1.4 pp [−3.1,
@@ -225,14 +221,17 @@ long-horizon tasks is only possible on RoboCasa.
   shorter sequence, not from lost information. The model does not use the
   content of its foresight at inference: it needs the slot filled, not
   informative. Internal diagnostics (1800 replans on identical inputs)
-  explain both halves: removal also shifts the action tokens' position
-  ids by ~709, a layout never seen in training; and although the action
-  queries put ~28% of their attention on the generated future tokens,
-  their output barely depends on what those tokens contain. They also
-  show that the wrong-episode replacement was a weak test (it changes the
-  future tokens' keys and values by only 1–3%), so the content-blindness
-  claim rests on the task-average replacement, which changes them by up
-  to 38%.
+  explain both halves. Removal also shifts the action tokens' position
+  ids by ~709, a layout never seen in training. And the action queries
+  put only 1.6% of their attention on the 29 forecast positions (28% goes
+  to the 680 encoded history-frame positions of the same block, 49% to
+  the understanding block), and their output barely depends on what the
+  block contains: the wrong-episode replacement changes the forecast
+  positions' values by 15% and the action by 0.3%; the task-average
+  replacement changes the forecast positions by 27% and the history
+  positions by 38%, and the action by 0.9%. Note that removal and the
+  task average act on the whole generation block — encoded history frames
+  and forecast together — so the invariance holds for both parts.
 - **mimic-video:** every intervention on the forecast gives 0% (baseline
   46/96 = 47.9%, rerun on identical episodes). A sanity check requested by
   the advisor shows that plain zeroing is not clean evidence: it makes all

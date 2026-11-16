@@ -19,8 +19,12 @@ Read in full: `f1_vla/src/models/modeling_f1.py`; parts of `f1_policy.py`,
 | The action expert sees the forecast only through the KV cache | Yes (`denoise_step` reads `past_key_values`); the robot state enters separately through `state_proj` | checked in code |
 | Interventions match the training interface | In joint training the action expert also reads its own *sampled* forecast (no teacher forcing in that branch, L383–470), so replacing the gen block at inference stays on the trained interface | checked in code |
 
-Consequences for existing results (to be corrected in the F1 README and
-thesis §5.1 once the old records are re-split):
+Consequences for existing results. **Corrected on 2026-11-16** (probe rerun with the
+680 + 29 split; F1 README Experiment 1 and thesis §5.1 updated): attention of the
+action queries is 1.6% on the forecast positions and 28% on the history positions;
+the wrong-episode forecast changes the forecast positions' keys / values by 6% / 15%;
+the task average changes history values by 38% and forecast values by 27%. The
+original list of what was wrong:
 
 - "28% of the action queries' attention goes to the generated future
   tokens" — that share was measured on a slice that is mostly history
