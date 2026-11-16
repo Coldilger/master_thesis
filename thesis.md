@@ -396,12 +396,44 @@ of another task.
   position 984 of 1013: the generation block is 680 history positions
   followed by 29 forecast positions.
 
-These are single decisions; whether small differences add up over an
-episode is tested in closed loop (the robot driven by each of the four
-combinations, mirrored instruction, 4 tasks × 24 episodes — running). The
-mirrored instructions are unusual for Bridge, so the closed loop also
-checks which object the robot goes for under B alone. mimic-video and
-LDA-1B: not done.
+*F1-VLA, closed loop (mirrored instruction, 96 episodes per combination).*
+The robot is driven at every decision by one combination of understanding
+block and generation block. Outcomes are scored against the scene's own
+task A; the simulator also reports which object was moved.
+
+| instruction read directly | forecast generated under | task A completed | moved A's object | moved the other object |
+|---|---|---|---|---|
+| A | A (control) | 41/96 | 75/96 | 1/96 |
+| A | B | 42/96 | 73/96 | 1/96 |
+| B | A | 0/96 | 6/96 | 40/96 |
+| B | B | 0/96 | 6/96 | 40/96 |
+
+- *The mirrored instruction is a real competing goal.* Under B the robot
+  moves the other object in 19/24 episodes on Spoon and 19/24 on Stack
+  (under A: 1/24 and 0/24). On Carrot and Eggplant the other object is the
+  plate or the basket, which the robot almost never moves; these two tasks
+  only show that A is no longer carried out.
+- *The forecast's instruction does not redirect the robot.* Instruction A
+  with the forecast of B: +1.0 pp [−7.3, +9.4] in success against the
+  control, the same objects moved. Instruction B with the forecast of A:
+  the robot still goes for the other object (40/96 in both) and never
+  completes A.
+- *Episodes change without a direction.* 17 of 96 episodes change outcome
+  between the control and "instruction A, forecast B" (8 lost, 9 gained).
+
+In F1-VLA the instruction reaches the action through the understanding
+block; a generation block produced under a competing instruction does not
+carry that instruction to the action, at single decisions or over whole
+episodes. This agrees with Experiment 1 and sharpens it: the forecast here
+is not averaged or taken from another episode, it is informative about a
+different goal, and the action still ignores it. Limits: one alternative
+instruction per task, one seed, 24 episodes per task; in closed loop the
+generation block was swapped as a whole (history and forecast positions
+together). mimic-video and LDA-1B: not done.
+
+![Experiment 8, F1-VLA, closed loop. For each combination of the instruction the action expert reads directly and the instruction the forecast was generated under: episodes in which task A was completed, A's object was moved, and the other object was moved (of 96, Wilson 95% intervals).](figures/fig_exp8_conflict_closed_loop.png)
+
+*Figure: Experiment 8, F1-VLA, closed loop. For each combination of the instruction the action expert reads directly and the instruction the forecast was generated under: episodes in which task A was completed, A's object was moved, and the other object was moved (of 96, Wilson 95% intervals).*
 
 ![Experiment 8, F1-VLA, single decisions with the mirrored instruction. Left: share of forecast tokens that change with the sampling seed and with the instruction. Right: change of the action chunk when the instruction is changed everywhere, when only the generation block or only its forecast positions come from the other instruction, and between two forecast seeds (noise floor). Bars: mean over episodes, 95% bootstrap interval.](figures/fig_exp8_conflict.png)
 

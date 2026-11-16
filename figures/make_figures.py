@@ -358,6 +358,35 @@ def exp8():
     save(fig, "fig_exp8_conflict.png")
 
 
+# F1-VLA eval/bridge/experiment8_conflict/README.md (step 2, closed loop)
+def exp8_closed():
+    cells = ["instruction A\nforecast A\n(control)", "instruction A\nforecast B", "instruction B\nforecast A", "instruction B\nforecast B"]
+    series = [("task A completed", [41, 42, 0, 0], C["base"]),
+              ("moved A's object", [75, 73, 6, 6], C["f1"]),
+              ("moved the other object", [1, 1, 40, 40], C["mimic"])]
+    fig, ax = plt.subplots(figsize=(9, 4))
+    w = 0.26
+    for j, (label, vals, color) in enumerate(series):
+        x = [i + (j - 1) * w for i in range(4)]
+        p = [100 * v / 96 for v in vals]
+        ci = [wilson(v, 96) for v in vals]
+        ax.bar(x, p, width=w, color=color, label=label)
+        ax.errorbar(x, p, yerr=[[a - c[0] for a, c in zip(p, ci)], [c[1] - a for a, c in zip(p, ci)]],
+                    fmt="none", color=C["ink"], capsize=2.5, lw=1)
+        for xi, v, c in zip(x, vals, ci):
+            ax.text(xi, c[1] + 1.5, str(v), ha="center", va="bottom", fontsize=8)
+    ax.set_xticks(range(4), cells, fontsize=9)
+    ax.set_ylim(0, 100)
+    ax.set_ylabel("episodes of 96, % (Wilson 95% CI)")
+    ax.set_title("The robot goes where the instruction it reads directly points;\nthe forecast's instruction does not redirect it")
+    ax.legend(frameon=False, fontsize=8.5, loc="upper center", ncol=3)
+    ax.grid(axis="x", visible=False)
+    fig.suptitle("Experiment 8, closed loop — F1-VLA, mirrored instruction B, 96 SimplerEnv Bridge episodes per cell",
+                 x=0.01, ha="left", fontweight="bold")
+    fig.tight_layout()
+    save(fig, "fig_exp8_conflict_closed_loop.png")
+
+
 if __name__ == "__main__":
     overview(); exp1(); exp2(); exp3(); exp4(); exp5(); camera(); exp9_open()
-    exp9_closed(extra_replan=[("1, plan\nstep 5", 17, 96)]); exp8()
+    exp9_closed(extra_replan=[("1, plan\nstep 5", 17, 96)]); exp8(); exp8_closed()

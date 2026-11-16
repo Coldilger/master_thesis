@@ -139,10 +139,15 @@ Not done yet for F1-VLA and LDA-1B.
 
 ![Experiment 8, single decisions](figures/fig_exp8_conflict.png)
 
-At a single decision the action follows the instruction it reads directly:
+![Experiment 8, closed loop](figures/fig_exp8_conflict_closed_loop.png)
+
+The action follows the instruction it reads directly. At a single decision
 a forecast generated under another instruction moves the action no more
 than a re-drawn forecast under the same instruction (about 0.3% of what
-changing the instruction does). Closed loop is running. Thesis §6.3 ·
+changing the instruction does). In closed loop the mirrored instruction
+sends the robot to the other object (40/96 episodes), and swapping the
+forecast between the two instructions changes neither success (+1.0 pp
+[−7.3, +9.4]) nor which object is moved. Thesis §6.3 ·
 [F1-VLA](https://github.com/Coldilger/F1-VLA/blob/bridge-finetune/eval/bridge/experiment8_conflict/README.md).
 Not done for mimic-video and LDA-1B.
 
