@@ -128,9 +128,23 @@ Thesis §5.6 · [LDA-1B](https://github.com/Coldilger/LDA-1B/blob/bridge-finetun
 ![Experiment 9, closed loop](figures/fig_exp9_closed_loop.png)
 
 Success is flat for 0–4 denoising steps and falls from 8 steps on, while
-latency grows from 1.4 s to 9.3 s. Thesis §6.4 ·
+latency grows from 1.4 s to 9.3 s. Averaging the action over four imagined
+futures at 16 steps brings success back (47/96). Executing only 1–2 planned
+actions gives 0/96 because the grasp sits in the later steps of the plan;
+executing plan step 5 at every step recovers 17/96. Thesis §6.4 ·
 [mimic-video](https://github.com/Coldilger/mimic-video/blob/main/eval/bridge/experiment9_depth/README.md).
 Not done yet for F1-VLA and LDA-1B.
+
+### Experiment 8 — Instruction–foresight conflict (F1-VLA)
+
+![Experiment 8, single decisions](figures/fig_exp8_conflict.png)
+
+At a single decision the action follows the instruction it reads directly:
+a forecast generated under another instruction moves the action no more
+than a re-drawn forecast under the same instruction (about 0.3% of what
+changing the instruction does). Closed loop is running. Thesis §6.3 ·
+[F1-VLA](https://github.com/Coldilger/F1-VLA/blob/bridge-finetune/eval/bridge/experiment8_conflict/README.md).
+Not done for mimic-video and LDA-1B.
 
 ### Planned, no results yet
 
@@ -138,7 +152,6 @@ Not done yet for F1-VLA and LDA-1B.
 |---|---|---|
 | 6 — Graded foresight replacement | How wrong may the forecast be? | §6.1 |
 | 7 — Horizon-shifted foresight | Does the timing of the forecast matter? | §6.2 |
-| 8 — Instruction–foresight conflict | Does the action follow the instruction or the forecast? | §6.3 |
 | 10 — Perturbed starts | Is foresight useful when the robot has to adapt? | §6.5 |
 | 11 — Matched action-only baseline | Did forecasting help during training? | §6.6 |
 | 12 — BridgeData pipeline audit | Is LDA-1B's 0% on Bridge a data-processing difference? | §6.7 |

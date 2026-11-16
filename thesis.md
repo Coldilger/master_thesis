@@ -365,7 +365,47 @@ branch expects: does the *timing* of the predicted event matter?
 ### 6.3 Experiment 8 — Instruction–foresight conflict
 Keep the observation, change the instruction, compare futures and actions;
 then swap the futures between instructions. Does the action follow the
-goal, the foresight, or both? (Cue-conflict design, Geirhos et al., 2019.)
+goal, the foresight, or both? (Cue-conflict design, Geirhos et al., 2019;
+the swap is an interchange intervention, Geiger et al., 2021.)
+
+*F1-VLA, single decisions (1785 replanning decisions, 4 tasks).* The
+instruction reaches the action expert directly (language tokens in the
+understanding block) and through the forecast (the generation block is
+produced while attending to the language). On the same observation, the
+same forecast sampling seed and the same action start noise, the policy is
+run under the scene's instruction A and under an instruction B, and the
+action is decoded again from every combination of "understanding block of
+one run, generation block of the other". B is either the mirrored
+instruction (the two objects swapped, e.g. "stack the yellow block on the
+green block"; same token count, so no position shifts) or the instruction
+of another task.
+
+- *The instruction changes the forecast less than resampling does.* A
+  different instruction changes 11–22% of the 30 forecast tokens; a
+  different sampling seed under the same instruction changes 67–74%.
+- *The action follows the instruction it reads directly.* Changing the
+  instruction everywhere moves the action chunk by 1.0–2.0 (mean L2 per
+  step, normalised units). Putting the generation block of the other
+  instruction under an unchanged understanding block moves it by
+  0.004–0.010, and swapping only the 29 forecast positions by 0.003–0.006
+  — the size of the change caused by a re-drawn forecast under the same
+  instruction (0.003–0.005). The share of the way the action moves towards
+  the forecast's instruction is 0.01–0.02 in all 16 instruction pairs, in
+  both directions.
+- *Layout confirmed from data.* Two sampling seeds never differ before
+  position 984 of 1013: the generation block is 680 history positions
+  followed by 29 forecast positions.
+
+These are single decisions; whether small differences add up over an
+episode is tested in closed loop (the robot driven by each of the four
+combinations, mirrored instruction, 4 tasks × 24 episodes — running). The
+mirrored instructions are unusual for Bridge, so the closed loop also
+checks which object the robot goes for under B alone. mimic-video and
+LDA-1B: not done.
+
+![Experiment 8, F1-VLA, single decisions with the mirrored instruction. Left: share of forecast tokens that change with the sampling seed and with the instruction. Right: change of the action chunk when the instruction is changed everywhere, when only the generation block or only its forecast positions come from the other instruction, and between two forecast seeds (noise floor). Bars: mean over episodes, 95% bootstrap interval.](figures/fig_exp8_conflict.png)
+
+*Figure: Experiment 8, F1-VLA, single decisions with the mirrored instruction. Left: share of forecast tokens that change with the sampling seed and with the instruction. Right: change of the action chunk when the instruction is changed everywhere, when only the generation block or only its forecast positions come from the other instruction, and between two forecast seeds (noise floor). Bars: mean over episodes, 95% bootstrap interval.*
 
 ### 6.4 Experiment 9 — Compute–performance trade-off
 Vary generation steps, prediction detail and replanning frequency; plot
@@ -411,15 +451,26 @@ single-seed collapse is the decoder committing to one imagined future. This
 does not make deep forecasts useful: four of them (about 4 × 9.3 s) only
 match what k=1 gives in 1.4 s. Replanning rate at k=1: executing 10 of the
 15 planned actions instead of 5 gives 38/96 (−8.3 pp [−17.7, +1.0],
-p = 0.15); executing 1 or 2 gives 0/96, which is unexplained and not yet
-checked for a controller artifact. Forecast detail is not varied for mimic-video:
+p = 0.15). Executing only 1 or 2 gives 0/96, and a diagnostic shows why:
+in the deployed setting the gripper-close command sits in the later steps
+of the executed plan (share of "close" by plan step 1–5: 0.07, 0.10, 0.08,
+0.25, 0.35), and the first step moves the arm about a third as fast, so a
+controller that only ever executes step 1 never grasps (0 grasps in 96
+episodes). Replanning at every step but executing the pose and gripper of
+plan step 5 brings grasps back to 45/96 (deployed: 61/96) and success to
+17/96 (−30.2 pp [−40.6, −19.8] against deployed); shifting the pose alone
+gives 2/96. The zero is therefore a property of where the grasp sits in the
+plan, not evidence against frequent replanning; the remaining gap is
+unexplained (on Carrot the arm's path per episode is about 1.5 times
+longer than in the deployed setting, 58 cm against 39 cm, which may reflect
+a newly imagined future at every call — not tested). Forecast detail is not varied for mimic-video:
 resolution and clip length are fixed, the decoder was trained on a context
 of exactly that size, and changing it would alter the input layout rather
 than only the forecast's content (the confound of Section 7.1).
 
-![Experiment 9, closed loop. Left: success against latency per decision for denoising depths k=0–16, and for k=16 with the action averaged over four video seeds. Right: success against the number of planned actions executed per decision.](figures/fig_exp9_closed_loop.png)
+![Experiment 9, closed loop. Left: success against latency per decision for denoising depths k=0–16, and for k=16 with the action averaged over four video seeds. Right: success against the number of planned actions executed per decision; the last bar replans at every step but executes plan step 5 (pose and gripper).](figures/fig_exp9_closed_loop.png)
 
-*Figure: Experiment 9, closed loop. Left: success against latency per decision for denoising depths k=0–16, and for k=16 with the action averaged over four video seeds. Right: success against the number of planned actions executed per decision.*
+*Figure: Experiment 9, closed loop. Left: success against latency per decision for denoising depths k=0–16, and for k=16 with the action averaged over four video seeds. Right: success against the number of planned actions executed per decision; the last bar replans at every step but executes plan step 5 (pose and gripper).*
 
 ### 6.5 Experiment 10 — Perturbed starts and object displacement
 Evaluate from perturbed starting states or after moving an object mid-

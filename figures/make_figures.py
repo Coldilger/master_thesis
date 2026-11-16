@@ -308,5 +308,56 @@ def overview():
     save(fig, "fig_overview.png")
 
 
+# ---------------------------------------------------------------- Experiment 8
+# F1-VLA eval/bridge/experiment8_conflict/README.md (steps 0-1, mirror
+# instruction, 1785 decisions; mean over episodes with 95% bootstrap interval)
+def exp8():
+    tasks = ["Carrot", "Eggplant", "Spoon", "Stack"]
+    tok_seed = [(0.74, 0.71, 0.77), (0.67, 0.62, 0.72), (0.74, 0.71, 0.76), (0.71, 0.68, 0.74)]
+    tok_instr = [(0.19, 0.17, 0.21), (0.17, 0.15, 0.19), (0.22, 0.20, 0.24), (0.19, 0.18, 0.21)]
+    dist = {  # (mean, lo, hi) per task
+        "instruction changed everywhere: d(BB, AA)": ([(1.971, 1.761, 2.178), (1.370, 1.265, 1.477), (2.003, 1.805, 2.204), (1.589, 1.381, 1.805)], C["base"]),
+        "whole generation block from B: d(AB, AA)": ([(0.0053, 0.0046, 0.0063), (0.0052, 0.0045, 0.0060), (0.0043, 0.0039, 0.0047), (0.0035, 0.0033, 0.0037)], C["f1"]),
+        "only forecast positions from B: d(ABf, AA)": ([(0.0064, 0.0039, 0.0099), (0.0046, 0.0036, 0.0060), (0.0034, 0.0030, 0.0039), (0.0029, 0.0028, 0.0031)], "#8fb0dc"),
+        "noise floor, other forecast seed: d(AA2, AA)": ([(0.0048, 0.0038, 0.0063), (0.0046, 0.0036, 0.0061), (0.0034, 0.0031, 0.0037), (0.0029, 0.0027, 0.0031)], C["ink"]),
+    }
+    fig, axes = plt.subplots(1, 2, figsize=(12.5, 4), gridspec_kw={"width_ratios": [1, 1.5]})
+    ax = axes[0]
+    w = 0.36
+    for j, (vals, color, label) in enumerate([(tok_seed, C["ink"], "other sampling seed, same instruction"),
+                                               (tok_instr, C["f1"], "other instruction, same seed")]):
+        x = [i + (j - 0.5) * w for i in range(4)]
+        m = [100 * v[0] for v in vals]
+        ax.bar(x, m, width=w, color=color, label=label)
+        ax.errorbar(x, m, yerr=[[100 * (v[0] - v[1]) for v in vals], [100 * (v[2] - v[0]) for v in vals]],
+                    fmt="none", color="#666b73", capsize=2.5, lw=1)
+    ax.set_xticks(range(4), tasks)
+    ax.set_ylim(0, 100)
+    ax.set_ylabel("forecast tokens that change, %")
+    ax.set_title("The instruction changes the forecast\nless than resampling it does")
+    ax.legend(frameon=False, fontsize=8.5, loc="upper right")
+    ax.grid(axis="x", visible=False)
+    ax = axes[1]
+    w = 0.2
+    for j, (label, (vals, color)) in enumerate(dist.items()):
+        x = [i + (j - 1.5) * w for i in range(4)]
+        m = [v[0] for v in vals]
+        ax.bar(x, m, width=w, color=color, label=label)
+        ax.errorbar(x, m, yerr=[[v[0] - v[1] for v in vals], [v[2] - v[0] for v in vals]],
+                    fmt="none", color="#666b73", capsize=2, lw=1)
+    ax.set_yscale("log")
+    ax.set_ylim(0.001, 30)
+    ax.set_xticks(range(4), tasks)
+    ax.set_ylabel("change of the action chunk (log scale)")
+    ax.set_title("The action follows the instruction;\na forecast made for another instruction moves it no more than noise")
+    ax.legend(frameon=False, fontsize=8.5, loc="upper center", ncol=2)
+    ax.grid(axis="x", visible=False)
+    fig.suptitle("Experiment 8, single decisions — F1-VLA, mirrored instruction, 1785 decisions on SimplerEnv Bridge",
+                 x=0.01, ha="left", fontweight="bold")
+    fig.tight_layout()
+    save(fig, "fig_exp8_conflict.png")
+
+
 if __name__ == "__main__":
-    overview(); exp1(); exp2(); exp3(); exp4(); exp5(); camera(); exp9_open(); exp9_closed()
+    overview(); exp1(); exp2(); exp3(); exp4(); exp5(); camera(); exp9_open()
+    exp9_closed(extra_replan=[("1, plan\nstep 5", 17, 96)]); exp8()

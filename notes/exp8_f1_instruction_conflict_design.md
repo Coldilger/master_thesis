@@ -1,6 +1,7 @@
-# Experiment 8 (advisor's point 7) for F1-VLA — design under discussion (2026-11-15)
+# Experiment 8 (advisor's point 7) for F1-VLA — design (2026-11-15)
 
-Not run yet. Extends the cue-conflict design of Geirhos et al. (2019) and
+Steps 0–1 done on 2026-11-16 (results: F1-VLA `eval/bridge/experiment8_conflict/README.md`, thesis §6.3); step 2 running.
+The forecast part of the generation block is 29 positions (the inputs of scales 2–4); 30 tokens are sampled. Extends the cue-conflict design of Geirhos et al. (2019) and
 interchange interventions (Geiger et al., 2021) to a policy's forecast.
 
 ## Question
