@@ -443,7 +443,16 @@ observed frames under A with the future under the mirrored instruction B
 never complete A (0/96, −47.9 pp [−56.2, −39.6]) and on Stack move the
 other cube in 16/24 episodes, as with everything under B (15/24); observed
 frames under B with the future under A complete A as often as the deployed
-policy (48/96 vs 46/96). The same caveat as in Experiment 1 applies: at the
+policy (48/96 vs 46/96). Splicing the two runs does not by itself produce
+an incoherent context: the split is by position, each run is computed by
+the video model on its own, and only the decoder sees the spliced sequence.
+The spliced action lands on the unspliced one of the future tokens' prompt
+(median distance d(AB, BB) = 0.008 and d(BA, AA) = 0.008 against
+d(BB, AA) = 0.118 and a seed noise floor of 0.032), and the reverse splice
+runs the task as well as the deployed policy. This agrees with
+Experiment 1's finding that the decoder puts 14% of its attention on the
+observed-frame tokens and changes its action by only 5% when they are
+dropped. The same caveat as in Experiment 1 applies: at the
 deployed operating point the future tokens are also the decoder's main view
 of the scene, so the experiment shows that the instruction reaches the
 action through the future part of the context, not that a predicted future
