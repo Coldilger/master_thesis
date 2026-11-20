@@ -428,7 +428,47 @@ is not averaged or taken from another episode, it is informative about a
 different goal, and the action still ignores it. Limits: one alternative
 instruction per task, one seed, 24 episodes per task; in closed loop the
 generation block was swapped as a whole (history and forecast positions
-together). mimic-video and LDA-1B: not done.
+together).
+
+*mimic-video (mirrored instructions, same tasks and episodes).* Here the
+instruction has no direct route to the action: the decoder reads only the
+robot state and the video model's activations, and the instruction is the
+video model's prompt. The closest analogue of the 2 × 2 design splits the
+decoder's context into the 2,400 tokens of the observed frames and the
+16,800 tokens of the imagined future, computed under prompt A or B. On
+1,440 single decisions the action moves 79–93% of the way towards the
+prompt of the *future* tokens, in all 16 instruction pairs and both
+directions (F1-VLA: 1–2%). In closed loop the robot follows the future too:
+observed frames under A with the future under the mirrored instruction B
+never complete A (0/96, −47.9 pp [−56.2, −39.6]) and on Stack move the
+other cube in 16/24 episodes, as with everything under B (15/24); observed
+frames under B with the future under A complete A as often as the deployed
+policy (48/96 vs 46/96). The same caveat as in Experiment 1 applies: at the
+deployed operating point the future tokens are also the decoder's main view
+of the scene, so the experiment shows that the instruction reaches the
+action through the future part of the context, not that a predicted future
+as such is what the decoder uses.
+
+*LDA-1B (RoboCasa, world model on).* The instruction reaches the action
+head directly (the Qwen-VL features are the MM-DiT's text tokens) and
+through the forecast. A = "pick up the cup, place it into the drawer and
+close the drawer", B = the same sentence with "can" (or "close the
+drawer"). On 1,219 single decisions a forecast made under B moves the
+action as much as a re-drawn forecast under A (0.0017 vs 0.0019; follow
+0.01–0.03). In closed loop (150 paired episodes per cell) the text decides:
+text A with the forecast of B succeeds exactly as often as the
+world-model-on policy (62/150, +0.0 pp [−8.7, +8.7]); text B costs about
+16 pp whichever forecast is used (36/150 with the forecast of A, 39/150
+with that of B; their difference −2.0 pp [−8.0, +4.0]).
+
+**Across the three models.** F1-VLA and LDA-1B act on the instruction they
+read directly and ignore a forecast generated for a competing goal;
+mimic-video, which has no direct route, acts on whatever instruction its
+imagined future encodes.
+
+![Experiment 8, all three models. Left: share of the way the action moves towards the forecast's instruction at single decisions (range over tasks). Right: closed-loop success on task A for each combination of the instruction read directly (mimic-video: observed-frame tokens) and the instruction the forecast was generated under (mimic-video: future-frame tokens); Wilson 95% intervals.](figures/fig_exp8_three_models.png)
+
+*Figure: Experiment 8, all three models. Left: share of the way the action moves towards the forecast's instruction at single decisions (range over tasks). Right: closed-loop success on task A for each combination of the instruction read directly (mimic-video: observed-frame tokens) and the instruction the forecast was generated under (mimic-video: future-frame tokens); Wilson 95% intervals.*
 
 ![Experiment 8, F1-VLA, closed loop. For each combination of the instruction the action expert reads directly and the instruction the forecast was generated under: episodes in which task A was completed, A's object was moved, and the other object was moved (of 96, Wilson 95% intervals).](figures/fig_exp8_conflict_closed_loop.png)
 
@@ -503,6 +543,34 @@ than only the forecast's content (the confound of Section 7.1).
 
 *Figure: Experiment 9, closed loop. Left: success against latency per decision for denoising depths k=0–16, and for k=16 with the action averaged over four video seeds. Right: success against the number of planned actions executed per decision; the last bar replans at every step but executes plan step 5 (pose and gripper).*
 
+*F1-VLA (forecast scales, 288 paired episodes per condition).* F1 builds
+its forecast coarse-to-fine and stops after 4 of 10 scales; the F1 paper
+varies this at inference (2 / 4 / 6 scales: 52.1 / 59.4 / 57.3%, 24
+episodes per task, one run). Each count of scales changes the number of
+forecast positions (1 scale: 0, 2: 4, 4: 29, 6: 90) and therefore also the
+position ids of the action tokens, the confound that cost −13.9 pp in
+Experiment 1; every count is therefore run twice, as is and with the action
+tokens' positions matched to the deployed layout. With positions matched
+the curve is flat: 143 / 136 / 140 / 143 of 288 for 1 / 2 / 4 / 6 scales
+(all within ±1.4 pp of the deployed policy, all intervals contain 0), while
+latency grows from 172.6 to 238.6 ms. Shifted positions cost a little at
+most (1 scale: −4.2 pp [−10.1, +1.7]); the rerun of the deployed setting
+reproduces Experiment 1 episode by episode.
+
+*LDA-1B (forecast denoising steps, 150 paired episodes).* Without a
+forecast (the authors' policy) 67/150 at 256.9 ms; with the forecast
+generated in 1 / 4 / 16 steps 57 / 62 / 63 of 150 at 333.8 / 430.1 / 802.6
+ms. No variant differs from the policy without a forecast (−6.7 to −2.7 pp,
+all intervals contain 0).
+
+**Across the three models.** More forecast compute buys no success
+anywhere: flat for F1-VLA and LDA-1B over a 1.4× and 3.1× range of latency,
+and falling for mimic-video beyond the shallowest steps.
+
+![Experiment 9, all three models: task success against latency per decision. F1-VLA: number of forecast scales, with the action tokens' positions matched (solid) or shifted (dashed); mimic-video: denoising steps of the video model; LDA-1B: denoising steps of the forecast (none = the authors' policy). * marks the deployed setting.](figures/fig_exp9_three_models.png)
+
+*Figure: Experiment 9, all three models: task success against latency per decision. F1-VLA: number of forecast scales, with the action tokens' positions matched (solid) or shifted (dashed); mimic-video: denoising steps of the video model; LDA-1B: denoising steps of the forecast (none = the authors' policy). * marks the deployed setting.*
+
 ### 6.5 Experiment 10 — Perturbed starts and object displacement
 Evaluate from perturbed starting states or after moving an object mid-
 episode: is foresight most useful when the robot has to adapt?
@@ -510,7 +578,22 @@ episode: is foresight most useful when the robot has to adapt?
 ### 6.6 Experiment 11 — Matched action-only baseline (if compute permits)
 Same data and training budget without a generation branch (for F1-VLA:
 π0), compared with the jointly trained model with and without its
-generation branch at inference.
+generation branch at inference. A matched action-only model is the
+standard control for auxiliary objectives (e.g. Jaderberg et al., 2017).
+Published reference points: F1's No-Gen variant (Bridge 27.1% vs 59.4%)
+also skips pretraining stages and changes the input layout; LDA-1B's
+authors compare policy-only and co-trained models by held-out action
+error on Agibot World (Sec. V-C, Fig. 10), not by task success.
+
+*F1-VLA, finetuning stage (running).* A second Bridge finetune from the
+same pretrained checkpoint, data order, steps (100,000) and optimiser as
+the deployed one, with the forecasting loss weighted 0 instead of 0.1; the
+architecture and input layout are unchanged. Training curves so far: the
+forecast stops forecasting within ~15k steps (token accuracy 0.27 → 0.01–
+0.04) while the action loss stays in the deployed run's range. Closed-loop
+success will be compared on the same 288 paired episodes. This tests only
+the finetuning stage: both models inherit forecasting from pretraining.
+mimic-video and LDA-1B: not started.
 
 ### 6.7 Experiment 12 — BridgeData pipeline audit
 Episode overlap, language annotations, frame sampling, action coordinates

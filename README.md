@@ -121,7 +121,7 @@ Thesis §5.5 ·
 
 Thesis §5.6 · [LDA-1B](https://github.com/Coldilger/LDA-1B/blob/bridge-finetune/eval/robocasa/RESULTS.md)
 
-### Experiment 9 — Compute vs. performance (mimic-video)
+### Experiment 9 — Compute vs. performance (all three models)
 
 ![Experiment 9, open loop](figures/fig_exp9_open_loop.png)
 
@@ -133,9 +133,14 @@ futures at 16 steps brings success back (47/96). Executing only 1–2 planned
 actions gives 0/96 because the grasp sits in the later steps of the plan;
 executing plan step 5 at every step recovers 17/96. Thesis §6.4 ·
 [mimic-video](https://github.com/Coldilger/mimic-video/blob/main/eval/bridge/experiment9_depth/README.md).
-Not done yet for F1-VLA and LDA-1B.
+![Experiment 9, all three models](figures/fig_exp9_three_models.png)
 
-### Experiment 8 — Instruction–foresight conflict (F1-VLA)
+F1-VLA (1–6 forecast scales, 288 paired episodes each) and LDA-1B (0–16
+forecast steps, 150 paired episodes each) are flat: more forecast compute
+costs latency and buys no success. [F1-VLA](https://github.com/Coldilger/F1-VLA/blob/bridge-finetune/eval/bridge/experiment9_scales/README.md) ·
+[LDA-1B](https://github.com/Coldilger/LDA-1B/blob/bridge-finetune/eval/robocasa/closed_loop/RESULTS_exp8_exp9.md).
+
+### Experiment 8 — Instruction–foresight conflict (all three models)
 
 ![Experiment 8, single decisions](figures/fig_exp8_conflict.png)
 
@@ -149,7 +154,16 @@ sends the robot to the other object (40/96 episodes), and swapping the
 forecast between the two instructions changes neither success (+1.0 pp
 [−7.3, +9.4]) nor which object is moved. Thesis §6.3 ·
 [F1-VLA](https://github.com/Coldilger/F1-VLA/blob/bridge-finetune/eval/bridge/experiment8_conflict/README.md).
-Not done for mimic-video and LDA-1B.
+
+
+![Experiment 8, all three models](figures/fig_exp8_three_models.png)
+
+LDA-1B behaves like F1-VLA (the text it reads decides; a forecast made for
+another goal changes nothing). mimic-video, which has no direct route for
+the instruction, follows the instruction encoded in its imagined future:
+with the future of the mirrored instruction it never completes the task.
+[mimic-video](https://github.com/Coldilger/mimic-video/blob/main/eval/bridge/experiment8_conflict/README.md) ·
+[LDA-1B](https://github.com/Coldilger/LDA-1B/blob/bridge-finetune/eval/robocasa/closed_loop/RESULTS_exp8_exp9.md).
 
 ### Planned, no results yet
 

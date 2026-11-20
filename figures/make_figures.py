@@ -16,6 +16,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 
 HERE = pathlib.Path(__file__).resolve().parent
 C = {"f1": "#3b6fb6", "mimic": "#d9822b", "lda": "#3f9b6b", "base": "#8a8f98", "bad": "#c0392b", "ink": "#22262b"}
@@ -387,6 +388,87 @@ def exp8_closed():
     save(fig, "fig_exp8_conflict_closed_loop.png")
 
 
+# ------------------------------------------- Experiments 8 and 9, all models
+# F1-VLA eval/bridge/experiment9_scales/README.md, mimic-video
+# eval/bridge/experiment9_depth/README.md, LDA-1B
+# eval/robocasa/closed_loop/RESULTS_exp8_exp9.md
+def exp9_three():
+    fig, axes = plt.subplots(1, 3, figsize=(14, 4), sharey=True)
+    panels = [
+        ("F1-VLA: forecast scales (Bridge, 288 ep.)", C["f1"], 288,
+         [("1", 172.6, 143), ("2", 185.5, 136), ("4*", 213.2, 140), ("6", 238.6, 143)],
+         [("1", 173.0, 128), ("2", 185.7, 137), ("6", 237.8, 133)], "ms"),
+        ("mimic-video: denoising steps k (Bridge, 96 ep.)", C["mimic"], 96,
+         [(f"k={k}" + ("*" if k == 1 else ""), 1000 * l, s) for k, l, s in zip(K_CL, LAT, SUCC)], None, "ms"),
+        ("LDA-1B: forecast steps (RoboCasa, 150 ep.)", C["lda"], 150,
+         [("none*", 256.9, 67), ("1", 333.8, 57), ("4", 430.1, 62), ("16", 802.6, 63)], None, "ms"),
+    ]
+    for ax, (title, color, n, pts, shifted, _u) in zip(axes, panels):
+        x = [p[1] for p in pts]; y = [100 * p[2] / n for p in pts]
+        ci = [wilson(p[2], n) for p in pts]
+        ax.errorbar(x, y, yerr=[[a - c[0] for a, c in zip(y, ci)], [c[1] - a for a, c in zip(y, ci)]],
+                    fmt="o-", color=color, capsize=3, label="positions matched" if shifted else None)
+        for p, xi, yi in zip(pts, x, y):
+            ax.annotate(p[0], (xi, yi), textcoords="offset points", xytext=(5, 6), fontsize=8.5)
+        if shifted:
+            xs = [p[1] for p in shifted]; ys = [100 * p[2] / n for p in shifted]
+            ax.plot(xs, ys, "s--", color=color, alpha=0.5, label="action positions shifted")
+            ax.legend(frameon=False, fontsize=8.5, loc="lower right")
+        ax.set_xscale("log")
+        ticks = {"F1": [170, 190, 210, 240], "mi": [1000, 2000, 5000, 10000], "LD": [250, 400, 600, 800]}[title[:2]]
+        ax.set_xticks(ticks, [str(t) for t in ticks])
+        ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+        ax.set_title(title, fontsize=10)
+        ax.set_xlabel("latency per decision, ms (log, H100)")
+        ax.set_ylim(0, 70)
+    axes[0].set_ylabel("task success, % (Wilson 95% CI)")
+    fig.suptitle("Experiment 9 — more forecast compute does not buy success in any of the three models (* = deployed)",
+                 x=0.01, ha="left", fontweight="bold")
+    fig.tight_layout()
+    save(fig, "fig_exp9_three_models.png")
+
+
+def exp8_three():
+    fig, axes = plt.subplots(1, 2, figsize=(13, 4.2), gridspec_kw={"width_ratios": [1, 1.6]})
+    ax = axes[0]
+    models = ["F1-VLA", "mimic-video", "LDA-1B"]
+    lo = [0.009, 0.86, 0.014]; hi = [0.012, 0.93, 0.016]
+    mid = [(a + b) / 2 for a, b in zip(lo, hi)]
+    ax.bar(range(3), mid, color=[C["f1"], C["mimic"], C["lda"]], width=0.6)
+    ax.errorbar(range(3), mid, yerr=[[m - a for m, a in zip(mid, lo)], [b - m for m, b in zip(mid, hi)]],
+                fmt="none", color=C["ink"], capsize=4)
+    for i, (a, b) in enumerate(zip(lo, hi)):
+        ax.text(i, b + 0.03, f"{a:.3f}–{b:.3f}" if b < 0.1 else f"{a:.2f}–{b:.2f}", ha="center", fontsize=9)
+    ax.axhline(0.5, color=C["base"], lw=0.8, ls=":")
+    ax.set_xticks(range(3), models)
+    ax.set_ylim(0, 1.05)
+    ax.set_ylabel("share of the way the action moves\ntowards the forecast's instruction")
+    ax.set_title("Single decisions (range over tasks;\nF1/mimic mirror, LDA 'can')", fontsize=10)
+    ax.grid(axis="x", visible=False)
+    ax = axes[1]
+    groups = [("F1-VLA", C["f1"], 96, [41, 42, 0, 0]), ("mimic-video", C["mimic"], 96, [46, 0, 48, 0]),
+              ("LDA-1B", C["lda"], 150, [62, 62, 36, 39])]
+    cells = ["read A\nforecast A", "read A\nforecast B", "read B\nforecast A", "read B\nforecast B"]
+    w = 0.26
+    for j, (name, color, n, vals) in enumerate(groups):
+        x = [i + (j - 1) * w for i in range(4)]
+        p = [100 * v / n for v in vals]
+        ci = [wilson(v, n) for v in vals]
+        ax.bar(x, p, width=w, color=color, label=f"{name} (n={n})")
+        ax.errorbar(x, p, yerr=[[a - c[0] for a, c in zip(p, ci)], [c[1] - a for a, c in zip(p, ci)]],
+                    fmt="none", color=C["ink"], capsize=2, lw=0.9)
+    ax.set_xticks(range(4), cells, fontsize=9)
+    ax.set_ylim(0, 75)
+    ax.set_ylabel("task A completed, % (Wilson 95% CI)")
+    ax.set_title("Closed loop. mimic: 'read' = observed-frame tokens, 'forecast' = future-frame tokens", fontsize=10)
+    ax.legend(frameon=False, fontsize=8.5, loc="upper right")
+    ax.grid(axis="x", visible=False)
+    fig.suptitle("Experiment 8 — F1-VLA and LDA-1B follow the instruction they read; mimic-video follows the one in its imagined future",
+                 x=0.01, ha="left", fontweight="bold")
+    fig.tight_layout()
+    save(fig, "fig_exp8_three_models.png")
+
+
 if __name__ == "__main__":
     overview(); exp1(); exp2(); exp3(); exp4(); exp5(); camera(); exp9_open()
-    exp9_closed(extra_replan=[("1, plan\nstep 5", 17, 96)]); exp8(); exp8_closed()
+    exp9_closed(extra_replan=[("1, plan\nstep 5", 17, 96)]); exp8(); exp8_closed(); exp9_three(); exp8_three()
