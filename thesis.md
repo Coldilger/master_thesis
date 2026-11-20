@@ -602,7 +602,27 @@ forecast stops forecasting within ~15k steps (token accuracy 0.27 → 0.01–
 0.04) while the action loss stays in the deployed run's range. Closed-loop
 success will be compared on the same 288 paired episodes. This tests only
 the finetuning stage: both models inherit forecasting from pretraining.
-mimic-video and LDA-1B: not started.
+
+*mimic-video, video-model stage (running).* mimic-video learns to forecast
+robot futures only when its video model is finetuned on Bridge videos; the
+action decoder is then trained on the frozen video model with the action
+loss alone. The authors released a matched second pair that skips the
+Bridge forecasting finetune: the generic Cosmos-Predict2 video model and a
+decoder trained on its activations with the same layer, learning rate,
+batch and iterations. It is evaluated on the same 96 episodes and
+operating point as the deployed policy. Unlike F1-VLA's run, the video
+model does not adapt to Bridge through the action loss (mimic-video's
+training code keeps it frozen).
+
+*LDA-1B, finetuning stage (starting).* Two finetunes of the authors'
+pretrained checkpoint on the evaluated RoboCasa task, identical except for
+one flag: all four co-trained tasks (the authors' recipe) or the policy
+task only (action loss alone), 100,000 micro-batches of 16 (the same
+sample budget as F1-VLA's run). With one GPU per job the language model is
+frozen in both runs and only one task's data is used, so the comparison is
+between these two runs, not with the authors' checkpoint. The deployed
+LDA-1B policy does not forecast at inference, so this tests the
+"useful only in training" half of the question directly.
 
 ### 6.7 Experiment 12 — BridgeData pipeline audit
 Episode overlap, language annotations, frame sampling, action coordinates
