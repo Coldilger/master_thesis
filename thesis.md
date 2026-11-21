@@ -603,7 +603,7 @@ forecast stops forecasting within ~15k steps (token accuracy 0.27 → 0.01–
 success will be compared on the same 288 paired episodes. This tests only
 the finetuning stage: both models inherit forecasting from pretraining.
 
-*mimic-video, video-model stage (running).* mimic-video learns to forecast
+*mimic-video, video-model stage.* mimic-video learns to forecast
 robot futures only when its video model is finetuned on Bridge videos; the
 action decoder is then trained on the frozen video model with the action
 loss alone. The authors released a matched second pair that skips the
@@ -612,9 +612,15 @@ decoder trained on its activations with the same layer, learning rate,
 batch and iterations. It is evaluated on the same 96 episodes and
 operating point as the deployed policy. Unlike F1-VLA's run, the video
 model does not adapt to Bridge through the action loss (mimic-video's
-training code keeps it frozen).
+training code keeps it frozen). Result: 1/96 against 46/96 (−46.9 pp
+[−55.2, −38.5], 45 episodes lost, none gained); the robot grasps the
+object in 11/96 episodes against 61/96. The Bridge video finetune is
+therefore necessary for mimic-video to act, but it is also the only stage
+in which the video model sees Bridge images, so this comparison removes
+domain adaptation together with forecasting and cannot say which of the
+two the decoder needs.
 
-*LDA-1B, finetuning stage (starting).* Two finetunes of the authors'
+*LDA-1B, finetuning stage (running).* Two finetunes of the authors'
 pretrained checkpoint on the evaluated RoboCasa task, identical except for
 one flag: all four co-trained tasks (the authors' recipe) or the policy
 task only (action loss alone), 100,000 micro-batches of 16 (the same
