@@ -333,7 +333,9 @@ checkpoint finetuned on egocentric frames does not work zero-shot from
 another viewpoint; it does not explain the Bridge 0%, where the model was
 finetuned on third-person frames and had seen such data in pretraining.
 The cause of the Bridge result is not established (viewpoint and
-pretraining, or a data-pipeline difference — Experiment 12).
+pretraining, or a data-pipeline difference). Experiment 12 found an
+orientation-convention bug in our LDA-1B Bridge wrapper that alone would
+prevent success (offline; §6.7).
 
 ![LDA-1B on RoboCasa with its training (egocentric) camera and with a third-person camera.](figures/fig_lda_camera_viewpoint.png)
 
@@ -647,8 +649,30 @@ LDA-1B policy does not forecast at inference, so this tests the
 
 ### 6.7 Experiment 12 — BridgeData pipeline audit
 Episode overlap, language annotations, frame sampling, action coordinates
-and orientation corrections across the two Bridge processing pipelines
-(`bridge_orig_lerobot` and LDA-1B's converted copy).
+and orientation conventions for the three models' Bridge data
+(`bridge_orig_lerobot` for F1-VLA, LDA-1B's converted copy of it, and
+mimic-video's own export of the raw data), at training and at evaluation
+(`LDA-1B/eval/bridge/experiment12_audit`).
+
+*Orientation.* Bridge stores the tool orientation in a frame rotated by a
+fixed 90° from the simulator's (SimplerEnv's own replay script uses
+`R_sim = R_data · T`). LDA-1B predicts motion in the tool's own frame, and
+its Bridge wrapper integrates it from the simulator pose without `T`. Fed
+the ground-truth deltas of 300 Bridge episodes, the wrapper moves the arm in
+a direction 77° (median) away from the true motion; with the conversion the
+error is zero. A perfect LDA-1B policy would therefore fail on SimplerEnv,
+which fits the drift seen in its closed-loop runs. This is an offline
+finding: the LDA-1B Bridge checkpoints no longer exist, so the closed-loop
+check needs a new finetune. F1-VLA predicts world-frame deltas, which need
+no such conversion; only its rotation state is approximate (28° median
+error). mimic-video trains in the simulator's convention.
+
+*Data and timing.* LDA-1B drops the 27% of episodes without an instruction
+(38,660 of 53,192); its copy is otherwise identical to F1-VLA's. F1-VLA was
+trained with history frames 0.6 s apart but is evaluated with consecutive
+frames (0.2 s), a choice made on one 24-episode run; LDA-1B and mimic-video
+match their training timing. The objects of the four evaluation tasks are
+named in 1.0%, 0.8%, 0.2% and 0% (Eggplant) of the training instructions.
 
 ---
 
