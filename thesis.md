@@ -610,7 +610,11 @@ positions (Experiment 1's `zero`) costs the weight-0 model as much as the
 deployed one (−13.2 pp [−19.1, −7.3] against −13.9 pp, each paired with
 its own baseline), although its forecast positions encode no forecast,
 while a forecast taken from another decision (`shuffle`) changes neither
-model (−0.3 pp [−4.9, +4.5] and +1.4 pp). The
+model (−0.3 pp [−4.9, +4.5] and +1.4 pp), nor does the per-task mean
+forecast (+0.7 pp and −0.3 pp). The action expert of the weight-0 model
+still attends to the generation block, though less (forecast positions
+0.009 of its attention against 0.016; encoded history 0.20 against 0.29).
+The
 `zero` drop of Experiment 1 therefore reflects a missing input of the usual
 form, not lost forecast content.
 
