@@ -594,14 +594,18 @@ also skips pretraining stages and changes the input layout; LDA-1B's
 authors compare policy-only and co-trained models by held-out action
 error on Agibot World (Sec. V-C, Fig. 10), not by task success.
 
-*F1-VLA, finetuning stage (running).* A second Bridge finetune from the
-same pretrained checkpoint, data order, steps (100,000) and optimiser as
-the deployed one, with the forecasting loss weighted 0 instead of 0.1; the
-architecture and input layout are unchanged. Training curves so far: the
-forecast stops forecasting within ~15k steps (token accuracy 0.27 → 0.01–
-0.04) while the action loss stays in the deployed run's range. Closed-loop
-success will be compared on the same 288 paired episodes. This tests only
-the finetuning stage: both models inherit forecasting from pretraining.
+*F1-VLA, finetuning stage.* A second Bridge finetune from the same
+pretrained checkpoint, data order, steps (100,000) and optimiser as the
+deployed one, with the forecasting loss weighted 0 instead of 0.1; the
+architecture and input layout are unchanged. Without its loss the forecast
+stops forecasting (token accuracy at the end of training 0.31 → 0.02, near
+chance) while the action loss is the same (0.122 in both runs). Closed-loop
+success is the same too: 139/288 against 140/288 (−0.3 pp [−6.6, +5.9],
+44 episodes lost, 43 gained); per task the differences go both ways
+(Carrot +7, Stack −9 of 72). Forecasting supervision during finetuning
+therefore does not improve F1-VLA's Bridge policy. This tests only the
+finetuning stage: both models inherit forecasting from pretraining, and
+the deployed run was not repeated to measure run-to-run training noise.
 
 *mimic-video, video-model stage.* mimic-video learns to forecast
 robot futures only when its video model is finetuned on Bridge videos; the
