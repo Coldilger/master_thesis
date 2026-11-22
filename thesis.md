@@ -605,7 +605,12 @@ success is the same too: 139/288 against 140/288 (−0.3 pp [−6.6, +5.9],
 (Carrot +7, Stack −9 of 72). Forecasting supervision during finetuning
 therefore does not improve F1-VLA's Bridge policy. This tests only the
 finetuning stage: both models inherit forecasting from pretraining, and
-the deployed run was not repeated to measure run-to-run training noise.
+the deployed run was not repeated to measure run-to-run training noise. Removing the forecast
+positions (Experiment 1's `zero`) costs the weight-0 model as much as the
+deployed one (−13.2 pp [−19.1, −7.3] against −13.9 pp, each paired with
+its own baseline), although its forecast positions encode no forecast. The
+`zero` drop of Experiment 1 therefore reflects a missing input of the usual
+form, not lost forecast content.
 
 *mimic-video, video-model stage.* mimic-video learns to forecast
 robot futures only when its video model is finetuned on Bridge videos; the
