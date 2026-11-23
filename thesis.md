@@ -671,7 +671,10 @@ error). mimic-video trains in the simulator's convention.
 (38,660 of 53,192); its copy is otherwise identical to F1-VLA's. F1-VLA was
 trained with history frames 0.6 s apart but is evaluated with consecutive
 frames (0.2 s), a choice made on one 24-episode run; LDA-1B and mimic-video
-match their training timing. The objects of the four evaluation tasks are
+match their training timing. Both F1-VLA departures were tested in the
+closed loop on 288 paired episodes: the exact rotation state gives 154/288
+against 140/288 (+4.9 pp [−1.0, +10.4], p = 0.13) and the training history
+spacing 141/288 (+0.3 pp); neither changes success significantly. The objects of the four evaluation tasks are
 named in 1.0%, 0.8%, 0.2% and 0% (Eggplant) of the training instructions.
 
 ---
