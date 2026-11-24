@@ -637,6 +637,18 @@ in which the video model sees Bridge images, so this comparison removes
 domain adaptation together with forecasting and cannot say which of the
 two the decoder needs.
 
+*LDA-1B, co-training.* Two finetunes of LDA-pretrain on the RoboCasa cup
+task, identical except that one trains all four objectives (policy, forward
+and inverse dynamics, visual forecasting) and the other only the policy,
+100k micro-batches each, evaluated on the 150 paired episodes of
+Experiment 1 with the world model off. Action-only training is better:
+42/150 against 24/150 (+12.0 pp [+4.0, +20.0], McNemar p = 0.008). The
+total sample budget is matched, not the policy's share: co-training assigns
+each sample to one of the four objectives with equal weight, so the policy
+sees about a quarter of the samples. The result says that, at equal
+compute, the forecasting objectives cost the policy more than they give it;
+both runs are short of convergence and of the authors' checkpoint (44.7%).
+
 *LDA-1B, finetuning stage (running).* Two finetunes of the authors'
 pretrained checkpoint on the evaluated RoboCasa task, identical except for
 one flag: all four co-trained tasks (the authors' recipe) or the policy
