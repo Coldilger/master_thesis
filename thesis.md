@@ -359,9 +359,33 @@ at identical saved states, then run the most informative conditions in
 closed loop. Extends Experiment 1's shuffle into a scale of "how wrong";
 method: interchange interventions (Geiger et al., 2021).
 
+*F1-VLA (2026-11-25, `F1-VLA/eval/bridge/experiment6_7_swap`).* The
+forecast tokens that reach the action expert are replaced in the closed
+loop (4 tasks × 24 episodes × 3 seeds), each condition paired with a
+control that feeds back F1's own tokens through the same hook. A forecast
+from another episode of the same task gives 131/288 against 124/288
+(+2.4 pp [−2.1, +6.9]), one from another task on the same table 78/216
+against 73/216, one from the other scene 125/288 (+0.3 pp); none is
+significant. At a single decision a replaced forecast changes the action
+as much as resampling F1's own forecast (0.004 in normalised units, 0.2%
+of the action's size); only the other-scene forecast exceeds that floor,
+by 15%. F1-VLA's action expert reads the forecast positions but not
+their content. mimic-video and LDA-1B: pending.
+
 ### 6.2 Experiment 7 — Horizon-shifted foresight
 Inject futures predicted for earlier or later horizons than the action
 branch expects: does the *timing* of the predicted event matter?
+
+*F1-VLA (2026-11-25, same runs as 6.1).* F1's own forecast from 1–2
+decisions earlier or later, and the real camera frame from 4 steps before
+to 16 steps after the current one, including the trained horizon t+3 (an
+oracle of the true future), all stay within ±2.1 pp of the control
+(118–129/288, all p ≥ 0.42). Timing does not matter, and neither does
+knowing the real future. Caveat: the "later" conditions simulate the
+future in a replayed copy of the environment, which matched the main one
+exactly at most Carrot and Stack decisions but not at most Eggplant and
+Spoon ones; restricted to Carrot and Stack the result is the same (all
+p ≥ 0.26). mimic-video and LDA-1B: pending.
 
 ### 6.3 Experiment 8 — Instruction–foresight conflict
 Keep the observation, change the instruction, compare futures and actions;
