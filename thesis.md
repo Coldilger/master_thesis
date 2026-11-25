@@ -334,8 +334,8 @@ another viewpoint; it does not explain the Bridge 0%, where the model was
 finetuned on third-person frames and had seen such data in pretraining.
 The cause of the Bridge result is not established (viewpoint and
 pretraining, or a data-pipeline difference). Experiment 12 found an
-orientation-convention bug in our LDA-1B Bridge wrapper that alone would
-prevent success (offline; §6.7).
+orientation-convention bug in our LDA-1B Bridge wrapper; fixing it leaves
+success at 0/288, so it is not the cause (§6.7).
 
 ![LDA-1B on RoboCasa with its training (egocentric) camera and with a third-person camera.](figures/fig_lda_camera_viewpoint.png)
 
@@ -673,9 +673,12 @@ its Bridge wrapper integrates it from the simulator pose without `T`. Fed
 the ground-truth deltas of 300 Bridge episodes, the wrapper moves the arm in
 a direction 77° (median) away from the true motion; with the conversion the
 error is zero. A perfect LDA-1B policy would therefore fail on SimplerEnv,
-which fits the drift seen in its closed-loop runs. This is an offline
-finding: the LDA-1B Bridge checkpoints no longer exist, so the closed-loop
-check needs a new finetune. F1-VLA predicts world-frame deltas, which need
+which fits the drift seen in its closed-loop runs. The closed-loop check
+does not bear this out as the explanation: a new 150k finetune with the
+original recipe scores 0/288 with the corrected wrapper and 0/288 with the
+old one on the same episodes, and partial progress is equally rare (10 vs
+9 episodes move the right object). The bug was real, but the cause of
+LDA-1B's 0% on Bridge remains open. F1-VLA predicts world-frame deltas, which need
 no such conversion; only its rotation state is approximate (28° median
 error). mimic-video trains in the simulator's convention.
 
