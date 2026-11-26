@@ -672,16 +672,19 @@ each sample to one of the four objectives with equal weight, so the policy
 sees about a quarter of the samples. The result says that, at equal
 compute, the forecasting objectives cost the policy more than they give it;
 both runs are short of convergence and of the authors' checkpoint (44.7%).
-
-*LDA-1B, finetuning stage (running).* Two finetunes of the authors'
-pretrained checkpoint on the evaluated RoboCasa task, identical except for
-one flag: all four co-trained tasks (the authors' recipe) or the policy
-task only (action loss alone), 100,000 micro-batches of 16 (the same
-sample budget as F1-VLA's run). With one GPU per job the language model is
-frozen in both runs and only one task's data is used, so the comparison is
-between these two runs, not with the authors' checkpoint. The deployed
-LDA-1B policy does not forecast at inference, so this tests the
-"useful only in training" half of the question directly.
+A third run trains on actions only for 25k micro-batches, as many policy
+samples as the co-trained run got in 100k: 34/150 (22.7%). It lies
+between the two and is not distinguishable from either (+6.7 pp
+[−1.3, +15.3], p = 0.16 against co-training; −5.3 pp [−13.3, +2.7],
+p = 0.26 against 100k action-only), so the split of the 12 pp gap between
+fewer policy samples and the forecasting objectives themselves stays open.
+What the control does bound: at an equal number of policy samples,
+co-training is at most 1.3 pp better (upper end of the 95% CI), so the
+forecasting objectives give the policy no measurable benefit per policy
+sample. One training seed per run. The deployed LDA-1B policy does not
+forecast at inference, so this tests the "useful only in training" half of
+the question directly
+(`LDA-1B/eval/robocasa/experiment11/README.md`).
 
 ### 6.7 Experiment 12 — BridgeData pipeline audit
 Episode overlap, language annotations, frame sampling, action coordinates
