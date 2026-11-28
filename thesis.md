@@ -370,7 +370,19 @@ significant. At a single decision a replaced forecast changes the action
 as much as resampling F1's own forecast (0.004 in normalised units, 0.2%
 of the action's size); only the other-scene forecast exceeds that floor,
 by 15%. F1-VLA's action expert reads the forecast positions but not
-their content. mimic-video and LDA-1B: pending.
+their content.
+
+*LDA-1B (running, 2026-11-28, `LDA-1B/eval/robocasa/experiment6_7_swap`).*
+The deployed policy never reads a forecast, so the replacement runs in the
+world-model-on mode of Experiments 1 and 8, where the inverse-dynamics task
+acts on `video_gen()`'s latent forecast of the frame 16 steps ahead. Same
+design as for F1-VLA on the 150 paired RoboCasa episodes: the own forecast
+of another scene of the set, the forecast of another trained task
+(milk to microwave), and Experiment 8's forecast under another instruction
+in the same scene, each paired with a control that feeds back the own
+forecast. Future donors are simulated in a second environment put into the
+main one's exact state (checked to be bit-identical over 96 steps).
+mimic-video: pending.
 
 ### 6.2 Experiment 7 — Horizon-shifted foresight
 Inject futures predicted for earlier or later horizons than the action
@@ -387,7 +399,13 @@ episode's actions. In the first runs this copy was reused across episodes
 and drifted from the main one at most Eggplant and Spoon decisions; the
 rerun builds a fresh copy for every look ahead and matches the main
 environment exactly at all 32,400 such decisions. The first runs gave the
-same result. mimic-video and LDA-1B: pending.
+same result.
+
+*LDA-1B (running, 2026-11-28, same runs as 6.1).* Own forecast 1–2
+decisions (12–24 steps) earlier or later; the real frame 12 steps before,
+now, and 4, 16 (the trained horizon, an oracle), 48 and 96 steps ahead,
+encoded by the action head's own DINOv3 as in Experiment 2.
+mimic-video: pending.
 
 ### 6.3 Experiment 8 — Instruction–foresight conflict
 Keep the observation, change the instruction, compare futures and actions;
