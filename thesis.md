@@ -376,16 +376,18 @@ their content. mimic-video and LDA-1B: pending.
 Inject futures predicted for earlier or later horizons than the action
 branch expects: does the *timing* of the predicted event matter?
 
-*F1-VLA (2026-11-25, same runs as 6.1).* F1's own forecast from 1–2
-decisions earlier or later, and the real camera frame from 4 steps before
-to 16 steps after the current one, including the trained horizon t+3 (an
-oracle of the true future), all stay within ±2.1 pp of the control
-(118–129/288, all p ≥ 0.42). Timing does not matter, and neither does
-knowing the real future. Caveat: the "later" conditions simulate the
-future in a replayed copy of the environment, which matched the main one
-exactly at most Carrot and Stack decisions but not at most Eggplant and
-Spoon ones; restricted to Carrot and Stack the result is the same (all
-p ≥ 0.26). mimic-video and LDA-1B: pending.
+*F1-VLA (2026-11-25, "later" conditions rerun 2026-11-28; same runs as
+6.1).* F1's own forecast from 1–2 decisions earlier or later, and the real
+camera frame from 4 steps before to 16 steps after the current one,
+including the trained horizon t+3 (an oracle of the true future), all stay
+within ±1.7 pp of the control (119–129/288, all p ≥ 0.50). Timing does not
+matter, and neither does knowing the real future. The "later" conditions
+simulate the future in a separate copy of the environment that replays the
+episode's actions. In the first runs this copy was reused across episodes
+and drifted from the main one at most Eggplant and Spoon decisions; the
+rerun builds a fresh copy for every look ahead and matches the main
+environment exactly at all 32,400 such decisions. The first runs gave the
+same result. mimic-video and LDA-1B: pending.
 
 ### 6.3 Experiment 8 — Instruction–foresight conflict
 Keep the observation, change the instruction, compare futures and actions;
